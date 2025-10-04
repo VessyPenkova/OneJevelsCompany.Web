@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - One Jevels Company</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+    <nav class="bg-white shadow-md p-4 flex justify-between items-center">
+        <a href="/" class="text-2xl font-bold text-amber-600">One Jevels</a>
+        <div class="space-x-4">
+            <a href="/" class="hover:text-amber-600">Home</a>
+            <a href="/Home/About" class="hover:text-amber-600">About</a>
+            <a href="/Shop/Collections" class="hover:text-amber-600">Collections</a>
+            <a href="/Shop/Build" class="hover:text-amber-600">Build Your Own</a>
+            <a href="/Designs" class="hover:text-amber-600">Designs</a>
+            <a href="/Cart/Cart" class="hover:text-amber-600">Cart</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8">
+        @RenderBody()
+    </div>
+
+    <footer class="mt-12 text-center text-sm text-gray-500 border-t py-4">
+        &copy; @DateTime.Now.Year One Jevels Company — Crafted with 💎 precision
+    </footer>
+</body>
+</html>

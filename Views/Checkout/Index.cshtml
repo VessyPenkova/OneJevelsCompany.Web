@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "Checkout";
+}
+
+<h2 class="text-2xl font-bold text-amber-600 mb-6 text-center">Checkout</h2>
+
+<form method="post" action="/Checkout/CreateOrder" class="max-w-xl mx-auto bg-white p-6 shadow rounded">
+    <div class="mb-4">
+        <label>Email</label>
+        <input name="email" class="border rounded w-full p-2" required />
+    </div>
+
+    <div class="mb-4">
+        <label>Shipping Address</label>
+        <textarea name="address" class="border rounded w-full p-2" required></textarea>
+    </div>
+
+    <button type="submit" class="bg-amber-600 text-white px-6 py-3 rounded hover:bg-amber-500 transition w-full">
+        Confirm Order & Pay
+    </button>
+</form>

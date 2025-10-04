@@ -1,0 +1,55 @@
+﻿@model IEnumerable<OneJevelsCompany.Web.Models.Component>
+@{
+    ViewData["Title"] = "Build Your Own Jewelry";
+    var category = ViewBag.Category;
+}
+
+<h2 class="text-2xl font-bold text-amber-600 mb-6 text-center">Build Your Custom @category</h2>
+
+<form id="buildForm" class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow">
+    <p class="text-gray-600 mb-4">Choose components for your jewelry:</p>
+
+    @foreach (var comp in Model.GroupBy(c => c.Type))
+    {
+        <h3 class="text-lg font-semibold mt-4 text-amber-600">@comp.Key</h3>
+        <div class="grid grid-cols-2 gap-2">
+            @foreach (var c in comp)
+            {
+                <label class="border rounded p-2 flex items-center space-x-2">
+                    <input type="checkbox" name="componentIds" value="@c.Id" />
+                    <span>@c.Name (@c.Price.ToString("C"))</span>
+                </label>
+            }
+        </div>
+    }
+
+    <button type="button" id="buildBtn" class="mt-6 bg-amber-600 text-white px-6 py-3 rounded hover:bg-amber-500 transition">
+        Add Custom Jewelry to Cart
+    </button>
+</form>
+
+<script>
+    document.getElementById('buildBtn').addEventListener('click', async () => {
+        const selected = Array.from(document.querySelectorAll('input[name="componentIds"]:checked'))
+            .map(cb => parseInt(cb.value));
+
+        const body = JSON.stringify({
+            category: "@category",
+            componentIds: selected
+        });
+
+        const res = await fetch('/Shop/Build', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            alert(`Added custom jewelry!\nTotal: $${data.total}\nComponents: ${data.summary}`);
+            window.location = '/Cart/Cart';
+        } else {
+            alert('Please select at least one component.');
+        }
+    });
+</script>

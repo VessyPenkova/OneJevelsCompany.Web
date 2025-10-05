@@ -1,4 +1,4 @@
-﻿namespace OneJevelsCompany.Web.Models
+﻿namespace OneJevelsCompany.Web.Models.Manufacturing
 {
     public class BuildRequest
     {

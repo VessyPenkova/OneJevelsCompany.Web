@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OneJevelsCompany.Web.Data;
 
@@ -11,9 +12,11 @@ using OneJevelsCompany.Web.Data;
 namespace OneJevelsCompany.Web.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251005185953_AddCollectionAndInvoiceLineFks")]
+    partial class AddCollectionAndInvoiceLineFks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -539,12 +542,6 @@ namespace OneJevelsCompany.Web.Migrations
                     b.Property<string>("ComponentsSummary")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CustomDesignName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsCustomBuild")
-                        .HasColumnType("bit");
-
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
@@ -553,9 +550,6 @@ namespace OneJevelsCompany.Web.Migrations
 
                     b.Property<int?>("ReadyJewelId")
                         .HasColumnType("int");
-
-                    b.Property<string>("RecipeJson")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()

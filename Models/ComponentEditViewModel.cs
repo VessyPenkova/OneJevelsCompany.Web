@@ -1,27 +1,27 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace OneJevelsCompany.Web.Models
 {
-    public class Component
+    public class ComponentEditViewModel
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [Required, MaxLength(160)]
         public string Name { get; set; } = string.Empty;
 
-        // NEW: dynamic category
+        // NEW
+        [Display(Name = "Category")]
         public int ComponentCategoryId { get; set; }
-        public ComponentCategory? Category { get; set; }
 
         public decimal Price { get; set; }
-
         [MaxLength(80)] public string? Sku { get; set; }
-        [MaxLength(500)] public string? ImageUrl { get; set; }
         [MaxLength(120)] public string? Dimensions { get; set; }
         [MaxLength(40)] public string? Color { get; set; }
         [MaxLength(40)] public string? SizeLabel { get; set; }
-        public int QuantityOnHand { get; set; } = 0;
+        public int QuantityOnHand { get; set; }
 
-        public ICollection<JewelComponent> Jewels { get; set; } = new List<JewelComponent>();
+        public string? CurrentImageUrl { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 }

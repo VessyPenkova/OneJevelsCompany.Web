@@ -1,0 +1,63 @@
+﻿@model OneJevelsCompany.Web.Models.ComponentEditViewModel
+@{
+    ViewData["Title"] = "New Component"; var cats = (List<SelectListItem>)ViewBag.Categories;
+}
+
+<h2 class="text-2xl font-bold text-amber-600 mb-6">New Component</h2>
+
+<form asp-action="NewComponent" method="post" enctype="multipart/form-data" class="bg-white p-6 rounded shadow max-w-3xl">
+    @Html.AntiForgeryToken()
+
+    <div class="grid md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm mb-1">Name</label>
+            <input asp-for="Name" class="border rounded w-full p-2" />
+            <span asp-validation-for="Name" class="text-red-600 text-sm"></span>
+        </div>
+        <div>
+            <label class="block text-sm mb-1">Category</label>
+            <select asp-for="ComponentCategoryId" class="border rounded w-full p-2" asp-items="cats"></select>
+        </div>
+
+        <div>
+            <label class="block text-sm mb-1">Price</label>
+            <input asp-for="Price" class="border rounded w-full p-2" />
+        </div>
+        <div>
+            <label class="block text-sm mb-1">SKU</label>
+            <input asp-for="Sku" class="border rounded w-full p-2" />
+        </div>
+
+        <div>
+            <label class="block text-sm mb-1">Color</label>
+            <input asp-for="Color" class="border rounded w-full p-2" />
+        </div>
+        <div>
+            <label class="block text-sm mb-1">Size Label</label>
+            <input asp-for="SizeLabel" class="border rounded w-full p-2" />
+        </div>
+
+        <div>
+            <label class="block text-sm mb-1">Dimensions</label>
+            <input asp-for="Dimensions" class="border rounded w-full p-2" />
+        </div>
+        <div>
+            <label class="block text-sm mb-1">Quantity on Hand</label>
+            <input asp-for="QuantityOnHand" class="border rounded w-full p-2" />
+        </div>
+
+        <div class="md:col-span-2">
+            <label class="block text-sm mb-1">Image</label>
+            <input type="file" name="ImageFile" class="border rounded w-full p-2" />
+        </div>
+    </div>
+
+    <div class="mt-6 flex gap-3">
+        <button class="px-4 py-2 rounded bg-amber-600 text-white">Save</button>
+        <a href="/Admin/Components" class="px-4 py-2 rounded border">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

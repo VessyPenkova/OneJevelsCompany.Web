@@ -11,10 +11,11 @@ namespace OneJevelsCompany.Web.Models
 
         public JewelCategory Category { get; set; }
 
-        /// <summary>
-        /// For ready-made items you can keep 0; price is derived from components.
-        /// </summary>
         public decimal BasePrice { get; set; }
+
+        // NEW
+        [MaxLength(500)] public string? ImageUrl { get; set; }
+        public int QuantityOnHand { get; set; } = 0;
 
         public ICollection<JewelComponent> Components { get; set; } = new List<JewelComponent>();
 

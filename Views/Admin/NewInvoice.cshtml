@@ -1,0 +1,210 @@
+﻿@model OneJevelsCompany.Web.Models.Admin.InvoiceInputModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "New Invoice";
+
+    var categories = ViewBag.Categories as List<SelectListItem> ?? new();
+    var jewels = ViewBag.Jewels as List<SelectListItem> ?? new();
+    var compsRaw = (IEnumerable<dynamic>)(ViewBag.ComponentsRaw ?? new List<dynamic>());
+
+    // Prebuild options once on the server
+    var catsOptionsHtml = string.Join("", categories.Select(cat => $"<option value='{cat.Value}'>{cat.Text}</option>"));
+    var compsOptionsHtml = string.Join("", compsRaw.Select(c => $"<option value='{c.Id}' data-cat='{c.ComponentCategoryId}'>{c.Text}</option>"));
+    var jewelsOptionsHtml = string.Join("", jewels.Select(j => $"<option value='{j.Value}'>{j.Text}</option>"));
+}
+
+<h2 class="text-2xl font-bold text-amber-600 mb-6">New Invoice</h2>
+
+<form asp-action="NewInvoice" method="post" class="bg-white p-6 rounded shadow max-w-5xl">
+    @Html.AntiForgeryToken()
+
+    <div class="grid md:grid-cols-3 gap-4 mb-4">
+        <div>
+            <label class="block text-sm mb-1">Number</label>
+            <input asp-for="Number" class="border rounded w-full p-2" />
+        </div>
+        <div>
+            <label class="block text-sm mb-1">Supplier</label>
+            <input asp-for="SupplierName" class="border rounded w-full p-2" />
+        </div>
+        <div>
+            <label class="block text-sm mb-1">Date (UTC)</label>
+            <input asp-for="IssuedOnUtc" type="datetime-local" class="border rounded w-full p-2"
+                   value="@Model.IssuedOnUtc.ToString("yyyy-MM-ddTHH:mm")" />
+        </div>
+    </div>
+
+    <table class="w-full table-auto border rounded">
+        <thead class="bg-amber-100">
+            <tr>
+                <th class="p-2 text-left">Type</th>
+                <th class="p-2 text-left">Category</th>
+                <th class="p-2 text-left">Item</th>
+                <th class="p-2 text-left">Qty</th>
+                <th class="p-2 text-left">Unit Cost</th>
+                <th class="p-2 text-left">Note</th>
+                <th class="p-2"></th>
+            </tr>
+        </thead>
+        <tbody id="linesBody">
+            @for (int i = 0; i < Model.Lines.Count; i++)
+            {
+                <tr class="border-t" data-index="@i">
+                    <td class="p-2">
+                        <select asp-for="Lines[@i].LineType" class="border rounded p-2 line-type">
+                            <option>Component</option>
+                            <option>Jewel</option>
+                        </select>
+                    </td>
+
+                    <td class="p-2">
+                        <select class="border rounded p-2 sel-comp-cat">
+                            <option value="">-- all categories --</option>
+                            @Html.Raw(catsOptionsHtml)
+                        </select>
+                    </td>
+
+                    <td class="p-2">
+                        <select asp-for="Lines[@i].ComponentId" class="border rounded p-2 sel-component">
+                            <option value="">-- select component --</option>
+                            @Html.Raw(compsOptionsHtml) @* each option has data-cat *@
+                        </select>
+
+                        <select asp-for="Lines[@i].JewelId" class="border rounded p-2 sel-jewel hidden">
+                            <option value="">-- select jewel --</option>
+                            @foreach (var j in jewels)
+                            {
+                                <option value="@j.Value">@j.Text</option>
+                            }
+                        </select>
+                    </td>
+
+                    <td class="p-2 w-24">
+                        <input asp-for="Lines[@i].Quantity" class="border rounded p-2 w-24" />
+                    </td>
+                    <td class="p-2 w-32">
+                        <input asp-for="Lines[@i].UnitCost" class="border rounded p-2 w-32" />
+                    </td>
+                    <td class="p-2">
+                        <input asp-for="Lines[@i].Note" class="border rounded p-2 w-full" />
+                    </td>
+                    <td class="p-2">
+                        <button type="button" class="text-red-600 hover:underline btn-remove">Remove</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="mt-4 flex gap-3">
+        <button type="button" id="btnAddLine" class="px-4 py-2 rounded border">Add Line</button>
+        <button type="submit" class="px-4 py-2 rounded bg-amber-600 text-white">Save Invoice</button>
+        <a href="/Admin/Invoices" class="px-4 py-2 rounded border">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        (function () {
+            function updateRowMode(tr) {
+                const typeSel = tr.querySelector('.line-type');
+                const catSel  = tr.querySelector('.sel-comp-cat');
+                const compSel = tr.querySelector('.sel-component');
+                const jewelSel= tr.querySelector('.sel-jewel');
+                const isComponent = typeSel.value === 'Component';
+
+                if (isComponent) {
+                    catSel.classList.remove('hidden');
+                    compSel.classList.remove('hidden');
+                    jewelSel.classList.add('hidden');
+                    jewelSel.value = '';
+                    filterByCat(tr);
+                } else {
+                    catSel.classList.add('hidden');
+                    compSel.classList.add('hidden');
+                    compSel.value = '';
+                    jewelSel.classList.remove('hidden');
+                }
+            }
+
+            function filterByCat(tr) {
+                const catSel  = tr.querySelector('.sel-comp-cat');
+                const compSel = tr.querySelector('.sel-component');
+                if (!catSel || !compSel) return;
+
+                const cat = catSel.value;
+                Array.from(compSel.options).forEach(opt => {
+                    if (!opt.value) return; // placeholder
+                    const ok = !cat || opt.getAttribute('data-cat') === cat;
+                    opt.hidden = !ok;
+                });
+
+                if (compSel.selectedOptions.length && compSel.selectedOptions[0].hidden) {
+                    compSel.value = "";
+                }
+            }
+
+            // Init existing rows
+            document.querySelectorAll('#linesBody tr').forEach(tr => {
+                updateRowMode(tr);
+                filterByCat(tr);
+            });
+
+            // Events
+            document.getElementById('linesBody').addEventListener('change', (e) => {
+                if (e.target.classList.contains('line-type')) {
+                    updateRowMode(e.target.closest('tr'));
+                }
+                if (e.target.classList.contains('sel-comp-cat')) {
+                    filterByCat(e.target.closest('tr'));
+                }
+            });
+
+            document.getElementById('linesBody').addEventListener('click', (e) => {
+                if (e.target.classList.contains('btn-remove')) {
+                    e.target.closest('tr').remove();
+                }
+            });
+
+            // Add line template (server pre-baked options injected with Html.Raw)
+            document.getElementById('btnAddLine').addEventListener('click', () => {
+                const body = document.getElementById('linesBody');
+                const idx = body.querySelectorAll('tr').length;
+
+                const template = `
+        <tr class="border-t" data-index="${idx}">
+          <td class="p-2">
+            <select name="Lines[${idx}].LineType" class="border rounded p-2 line-type">
+              <option>Component</option><option>Jewel</option>
+            </select>
+          </td>
+          <td class="p-2">
+            <select class="border rounded p-2 sel-comp-cat">
+              <option value="">-- all categories --</option>
+              @Html.Raw(catsOptionsHtml)
+            </select>
+          </td>
+          <td class="p-2">
+            <select name="Lines[${idx}].ComponentId" class="border rounded p-2 sel-component">
+              <option value="">-- select component --</option>
+              @Html.Raw(compsOptionsHtml)
+            </select>
+            <select name="Lines[${idx}].JewelId" class="border rounded p-2 sel-jewel hidden">
+              <option value="">-- select jewel --</option>
+              @Html.Raw(jewelsOptionsHtml)
+            </select>
+          </td>
+          <td class="p-2 w-24"><input name="Lines[${idx}].Quantity" value="1" class="border rounded p-2 w-24"/></td>
+          <td class="p-2 w-32"><input name="Lines[${idx}].UnitCost" value="0" class="border rounded p-2 w-32"/></td>
+          <td class="p-2"><input name="Lines[${idx}].Note" class="border rounded p-2 w-full"/></td>
+          <td class="p-2"><button type="button" class="text-red-600 hover:underline btn-remove">Remove</button></td>
+        </tr>`;
+
+                body.insertAdjacentHTML('beforeend', template);
+                const newRow = body.lastElementChild;
+                updateRowMode(newRow);
+                filterByCat(newRow);
+            });
+        })();
+    </script>
+}

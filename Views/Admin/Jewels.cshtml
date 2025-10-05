@@ -1,0 +1,21 @@
+﻿@model IEnumerable<OneJevelsCompany.Web.Models.Jewel>
+@{
+    ViewData["Title"] = "Jewels";
+}
+<h2 class="text-2xl font-bold text-amber-600 mb-4">Jewels</h2>
+<a href="/Admin/NewInvoice" class="px-3 py-2 rounded bg-amber-600 text-white">Receive via Invoice</a>
+<table class="w-full table-auto bg-white rounded shadow mt-4">
+    <thead class="bg-amber-100">
+        <tr>
+            <th class="p-2 text-left">Name</th>
+            <th class="p-2 text-left">Category</th>
+            <th class="p-2 text-left">Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var j in Model)
+        {
+            <tr class="border-t"><td class="p-2">@j.Name</td><td class="p-2">@j.Category</td><td class="p-2">@j.QuantityOnHand</td></tr>
+        }
+    </tbody>
+</table>

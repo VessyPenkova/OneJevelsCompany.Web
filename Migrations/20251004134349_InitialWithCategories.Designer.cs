@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OneJevelsCompany.Web.Data;
 
@@ -11,9 +12,11 @@ using OneJevelsCompany.Web.Data;
 namespace OneJevelsCompany.Web.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251004134349_InitialWithCategories")]
+    partial class InitialWithCategories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -224,45 +227,6 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Collection", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("BasePrice")
-                        .HasPrecision(14, 2)
-                        .HasColumnType("decimal(14,2)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("QuantityOnHand")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Collections");
-                });
-
             modelBuilder.Entity("OneJevelsCompany.Web.Models.Component", b =>
                 {
                     b.Property<int>("Id")
@@ -401,9 +365,6 @@ namespace OneJevelsCompany.Web.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CollectionId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ComponentId")
                         .HasColumnType("int");
 
@@ -425,8 +386,6 @@ namespace OneJevelsCompany.Web.Migrations
                         .HasColumnType("decimal(14,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CollectionId");
 
                     b.HasIndex("ComponentId");
 
@@ -530,20 +489,11 @@ namespace OneJevelsCompany.Web.Migrations
                     b.Property<int>("Category")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CollectionId")
-                        .HasColumnType("int");
-
                     b.Property<string>("ComponentIdsCsv")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ComponentsSummary")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CustomDesignName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsCustomBuild")
-                        .HasColumnType("bit");
 
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
@@ -553,9 +503,6 @@ namespace OneJevelsCompany.Web.Migrations
 
                     b.Property<int?>("ReadyJewelId")
                         .HasColumnType("int");
-
-                    b.Property<string>("RecipeJson")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -636,15 +583,9 @@ namespace OneJevelsCompany.Web.Migrations
 
             modelBuilder.Entity("OneJevelsCompany.Web.Models.InvoiceLine", b =>
                 {
-                    b.HasOne("OneJevelsCompany.Web.Models.Collection", "Collection")
-                        .WithMany()
-                        .HasForeignKey("CollectionId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("OneJevelsCompany.Web.Models.Component", "Component")
                         .WithMany()
-                        .HasForeignKey("ComponentId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("ComponentId");
 
                     b.HasOne("OneJevelsCompany.Web.Models.Invoice", "Invoice")
                         .WithMany("Lines")
@@ -654,10 +595,7 @@ namespace OneJevelsCompany.Web.Migrations
 
                     b.HasOne("OneJevelsCompany.Web.Models.Jewel", "Jewel")
                         .WithMany()
-                        .HasForeignKey("JewelId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Collection");
+                        .HasForeignKey("JewelId");
 
                     b.Navigation("Component");
 

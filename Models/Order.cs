@@ -18,7 +18,7 @@ namespace OneJevelsCompany.Web.Models
 
         public string Status { get; set; } = "Pending";
 
-        public string? PaymentProviderId { get; set; } // e.g., Stripe PaymentIntent Id
+        public string? PaymentProviderId { get; set; }
 
         public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     }

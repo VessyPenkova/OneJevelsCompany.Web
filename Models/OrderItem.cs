@@ -6,13 +6,23 @@
         public int OrderId { get; set; }
         public Order Order { get; set; } = default!;
 
-        public string Title { get; set; } = string.Empty; // Either ready jewel name or "Custom Necklace" etc.
+        public string Title { get; set; } = string.Empty;
         public JewelCategory Category { get; set; }
         public int Quantity { get; set; }
-
         public decimal UnitPrice { get; set; }
 
-        // Optional: store chosen components for custom builds (CSV)
         public string? ComponentsSummary { get; set; }
+
+        // Existing
+        public string? ComponentIdsCsv { get; set; }
+        public int? ReadyJewelId { get; set; }
+
+        // NEW: supports ready-made collections
+        public int? CollectionId { get; set; }
+        // NEW
+        public bool IsCustomBuild { get; set; } = false;
+        public string? RecipeJson { get; set; }
+        public string? CustomDesignName { get; set; }
+
     }
 }

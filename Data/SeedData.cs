@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OneJevelsCompany.Web.Models;
-using System.ComponentModel;
+// Avoid clash with System.ComponentModel.Component:
 using Component = OneJevelsCompany.Web.Models.Component;
 
 namespace OneJevelsCompany.Web.Data
@@ -9,74 +9,126 @@ namespace OneJevelsCompany.Web.Data
     {
         public static async Task ApplyAsync(AppDbContext db)
         {
-            if (await db.Jewels.AnyAsync()) return;
-
-            var components = new List<Component>
+            // ----- 1) Categories -----
+            if (!await db.ComponentCategories.AnyAsync())
             {
-                new Component { Name = "Gold Chain (45cm)", Type = ComponentType.Chain, Price = 120m },
-                new Component { Name = "Silver Chain (45cm)", Type = ComponentType.Chain, Price = 40m },
-                new Component { Name = "Leather Cord (Black)", Type = ComponentType.Chain, Price = 20m },
-
-                new Component { Name = "Clasp – Gold", Type = ComponentType.Clasp, Price = 25m },
-                new Component { Name = "Clasp – Silver", Type = ComponentType.Clasp, Price = 10m },
-
-                new Component { Name = "Pendant – Amethyst", Type = ComponentType.Pendant, Price = 60m },
-                new Component { Name = "Pendant – Emerald", Type = ComponentType.Pendant, Price = 240m },
-                new Component { Name = "Pendant – Pearl", Type = ComponentType.Pendant, Price = 85m },
-
-                new Component { Name = "Bead – Onyx (pack)", Type = ComponentType.Bead, Price = 15m },
-                new Component { Name = "Bead – Rose Quartz (pack)", Type = ComponentType.Bead, Price = 18m },
-                new Component { Name = "Bead – Lapis (pack)", Type = ComponentType.Bead, Price = 22m }
-            };
-            db.Components.AddRange(components);
-
-            var ready = new List<Jewel>
-            {
-                new Jewel
-                {
-                    Name = "Classic Gold Pearl Necklace",
-                    Category = JewelCategory.Necklace,
-                    BasePrice = 0m,
-                    Components = new List<JewelComponent>()
-                },
-                new Jewel
-                {
-                    Name = "Onyx Serenity Bracelet",
-                    Category = JewelCategory.Bracelet,
-                    BasePrice = 0m,
-                    Components = new List<JewelComponent>()
-                }
-            };
-            db.Jewels.AddRange(ready);
-            await db.SaveChangesAsync();
-
-            // Tie some components to ready-made pieces (their price = sum of components)
-            var necklace = ready.First(j => j.Category == JewelCategory.Necklace);
-            var bracelet = ready.First(j => j.Category == JewelCategory.Bracelet);
-
-            void AddComp(Jewel j, string compName)
-            {
-                var c = components.First(x => x.Name == compName);
-                db.JewelComponents.Add(new JewelComponent { JewelId = j.Id, ComponentId = c.Id });
+                db.ComponentCategories.AddRange(
+                    new ComponentCategory { Name = "Chain", SortOrder = 10, IsActive = true },
+                    new ComponentCategory { Name = "Clasp", SortOrder = 20, IsActive = true },
+                    new ComponentCategory { Name = "Pendant", SortOrder = 30, IsActive = true },
+                    new ComponentCategory { Name = "Bead", SortOrder = 40, IsActive = true }
+                );
+                await db.SaveChangesAsync();
             }
 
-            AddComp(necklace, "Gold Chain (45cm)");
-            AddComp(necklace, "Clasp – Gold");
-            AddComp(necklace, "Pendant – Pearl");
+            // Fetch categories (have IDs now)
+            var catChain = await db.ComponentCategories.FirstAsync(c => c.Name == "Chain");
+            var catClasp = await db.ComponentCategories.FirstAsync(c => c.Name == "Clasp");
+            var catPendant = await db.ComponentCategories.FirstAsync(c => c.Name == "Pendant");
+            var catBead = await db.ComponentCategories.FirstAsync(c => c.Name == "Bead");
 
-            AddComp(bracelet, "Leather Cord (Black)");
-            AddComp(bracelet, "Clasp – Silver");
-            AddComp(bracelet, "Bead – Onyx (pack)");
+            // ----- 2) Components -----
+            if (!await db.Components.AnyAsync())
+            {
+                var components = new List<Component>
+                {
+                    new Component { Name = "Gold Chain (45cm)",      ComponentCategoryId = catChain.Id,   Price = 120m, Sku = "CHN-G-45",   ImageUrl="/images/chain-gold-45.jpg",   Dimensions="45cm",        QuantityOnHand = 20 },
+                    new Component { Name = "Silver Chain (45cm)",    ComponentCategoryId = catChain.Id,   Price =  40m, Sku = "CHN-S-45",   ImageUrl="/images/chain-silver-45.jpg", Dimensions="45cm",        QuantityOnHand = 30 },
+                    new Component { Name = "Leather Cord (Black)",   ComponentCategoryId = catChain.Id,   Price =  20m, Sku = "CORD-BLK",   ImageUrl="/images/cord-black.jpg",      Dimensions="Adjustable",  QuantityOnHand = 40 },
 
-            await db.SaveChangesAsync();
+                    new Component { Name = "Clasp – Gold",           ComponentCategoryId = catClasp.Id,   Price =  25m, Sku = "CLASP-G",     ImageUrl="/images/clasp-gold.jpg",      Dimensions="Std",         QuantityOnHand = 50 },
+                    new Component { Name = "Clasp – Silver",         ComponentCategoryId = catClasp.Id,   Price =  10m, Sku = "CLASP-S",     ImageUrl="/images/clasp-silver.jpg",    Dimensions="Std",         QuantityOnHand = 60 },
 
-            // Best designs showcase
-            db.Designs.AddRange(
-                new Design { Name = "Emerald Minimalist", Category = JewelCategory.Necklace, Description = "Elegant gold chain with emerald pendant." },
-                new Design { Name = "Ocean Lapis", Category = JewelCategory.Bracelet, Description = "Lapis beads on leather with silver clasp." }
-            );
+                    new Component { Name = "Pendant – Amethyst",     ComponentCategoryId = catPendant.Id, Price =  60m, Sku = "PEND-AMETH",  ImageUrl="/images/pendant-amethyst.jpg", Dimensions="Oval 18mm",  QuantityOnHand = 15, Color="Purple" },
+                    new Component { Name = "Pendant – Emerald",      ComponentCategoryId = catPendant.Id, Price = 240m, Sku = "PEND-EMRLD",  ImageUrl="/images/pendant-emerald.jpg",  Dimensions="Pear 14mm",  QuantityOnHand =  8, Color="Green"  },
+                    new Component { Name = "Pendant – Pearl",        ComponentCategoryId = catPendant.Id, Price =  85m, Sku = "PEND-PEARL",   ImageUrl="/images/pendant-pearl.jpg",    Dimensions="9mm",        QuantityOnHand = 18, Color="White"  },
 
-            await db.SaveChangesAsync();
+                    new Component { Name = "Bead – Onyx (pack)",     ComponentCategoryId = catBead.Id,    Price =  15m, Sku = "BEAD-ONX",    ImageUrl="/images/bead-onyx.jpg",        Dimensions="6mm (pack)", QuantityOnHand = 40, Color="Black", SizeLabel="6mm" },
+                    new Component { Name = "Bead – Rose Quartz (pack)", ComponentCategoryId = catBead.Id,  Price =  18m, Sku = "BEAD-RQ",      ImageUrl="/images/bead-rose-quartz.jpg", Dimensions="6mm (pack)", QuantityOnHand = 35, Color="Pink",  SizeLabel="6mm" },
+                    new Component { Name = "Bead – Lapis (pack)",    ComponentCategoryId = catBead.Id,    Price =  22m, Sku = "BEAD-LAPIS",  ImageUrl="/images/bead-lapis.jpg",       Dimensions="6mm (pack)", QuantityOnHand = 32, Color="Blue",  SizeLabel="6mm" }
+                };
+                db.Components.AddRange(components);
+                await db.SaveChangesAsync();
+            }
+
+            // We'll need these names when linking jewels below
+            var compsByName = await db.Components.ToDictionaryAsync(c => c.Name, c => c);
+
+            // ----- 3) Ready-made Jewels -----
+            if (!await db.Jewels.AnyAsync())
+            {
+                var ready = new List<Jewel>
+                {
+                    new Jewel
+                    {
+                        Name = "Classic Gold Pearl Necklace",
+                        Category = JewelCategory.Necklace,
+                        BasePrice = 0m,
+                        ImageUrl = "/images/jewel-gold-pearl-necklace.jpg",
+                        QuantityOnHand = 5,
+                        Components = new List<JewelComponent>()
+                    },
+                    new Jewel
+                    {
+                        Name = "Onyx Serenity Bracelet",
+                        Category = JewelCategory.Bracelet,
+                        BasePrice = 0m,
+                        ImageUrl = "/images/jewel-onyx-serenity-bracelet.jpg",
+                        QuantityOnHand = 7,
+                        Components = new List<JewelComponent>()
+                    }
+                };
+
+                db.Jewels.AddRange(ready);
+                await db.SaveChangesAsync();
+            }
+
+            // Reload jewels (now have IDs)
+            var necklace = await db.Jewels.FirstAsync(j => j.Name == "Classic Gold Pearl Necklace");
+            var bracelet = await db.Jewels.FirstAsync(j => j.Name == "Onyx Serenity Bracelet");
+
+            // ----- 4) Link components to ready-made jewels (if not already linked) -----
+            if (!await db.JewelComponents.AnyAsync())
+            {
+                void Link(Jewel j, string compName)
+                {
+                    var c = compsByName[compName];
+                    db.JewelComponents.Add(new JewelComponent { JewelId = j.Id, ComponentId = c.Id });
+                }
+
+                Link(necklace, "Gold Chain (45cm)");
+                Link(necklace, "Clasp – Gold");
+                Link(necklace, "Pendant – Pearl");
+
+                Link(bracelet, "Leather Cord (Black)");
+                Link(bracelet, "Clasp – Silver");
+                Link(bracelet, "Bead – Onyx (pack)");
+
+                await db.SaveChangesAsync();
+            }
+
+            // ----- 5) Showcase designs -----
+            if (!await db.Designs.AnyAsync())
+            {
+                db.Designs.AddRange(
+                    new Design
+                    {
+                        Name = "Emerald Minimalist",
+                        Category = JewelCategory.Necklace,
+                        Description = "Elegant gold chain with emerald pendant.",
+                        ImageUrl = "/images/design-emerald-minimalist.jpg"
+                    },
+                    new Design
+                    {
+                        Name = "Ocean Lapis",
+                        Category = JewelCategory.Bracelet,
+                        Description = "Lapis beads on leather with silver clasp.",
+                        ImageUrl = "/images/design-ocean-lapis.jpg"
+                    }
+                );
+
+                await db.SaveChangesAsync();
+            }
         }
     }
 }

@@ -1,54 +1,100 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using OneJevelsCompany.Web.Models;
-using Component = OneJevelsCompany.Web.Models.Component;
 
 namespace OneJevelsCompany.Web.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<IdentityUser>
     {
-       
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        // Catalog
+        public DbSet<ComponentCategory> ComponentCategories => Set<ComponentCategory>();
+        public DbSet<Component> Components => Set<Component>();
+        public DbSet<Jewel> Jewels => Set<Jewel>();
+        public DbSet<JewelComponent> JewelComponents => Set<JewelComponent>();
+        public DbSet<Design> Designs => Set<Design>();
+        public DbSet<Collection> Collections => Set<Collection>();
+
+        // Orders
+        public DbSet<Order> Orders => Set<Order>();
+        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
+        // Inventory / Receiving
+        public DbSet<Invoice> Invoices => Set<Invoice>();
+        public DbSet<InvoiceLine> InvoiceLines => Set<InvoiceLine>();
+
+        protected override void OnModelCreating(ModelBuilder model)
         {
-            modelBuilder.Entity<JewelComponent>()
+            base.OnModelCreating(model); // IMPORTANT for Identity
+
+            // ----- Junction: Jewel <-> Component (composite key)
+            model.Entity<JewelComponent>()
                 .HasKey(jc => new { jc.JewelId, jc.ComponentId });
 
-            modelBuilder.Entity<JewelComponent>()
+            model.Entity<JewelComponent>()
                 .HasOne(jc => jc.Jewel)
                 .WithMany(j => j.Components)
-                .HasForeignKey(jc => jc.JewelId);
+                .HasForeignKey(jc => jc.JewelId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<JewelComponent>()
+            model.Entity<JewelComponent>()
                 .HasOne(jc => jc.Component)
                 .WithMany(c => c.Jewels)
-                .HasForeignKey(jc => jc.ComponentId);
+                .HasForeignKey(jc => jc.ComponentId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Jewel>()
-                .Property(j => j.BasePrice)
-                .HasPrecision(14, 2);
+            // ----- Component -> Category (required FK)
+            model.Entity<Component>()
+                .HasOne(c => c.Category)
+                .WithMany(cat => cat.Components)
+                .HasForeignKey(c => c.ComponentCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Component>()
+            // ----- InvoiceLine optional FKs (so we can invoice components, jewels or collections)
+            model.Entity<InvoiceLine>()
+                .HasOne(l => l.Component)
+                .WithMany()
+                .HasForeignKey(l => l.ComponentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            model.Entity<InvoiceLine>()
+                .HasOne(l => l.Jewel)
+                .WithMany()
+                .HasForeignKey(l => l.JewelId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            model.Entity<InvoiceLine>()
+                .HasOne(l => l.Collection)
+                .WithMany()
+                .HasForeignKey(l => l.CollectionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ----- Money / amounts precision
+            model.Entity<Component>()
                 .Property(c => c.Price)
                 .HasPrecision(14, 2);
 
-            modelBuilder.Entity<Order>()
-                .Property(o => o.Total)
+            model.Entity<Jewel>()
+                .Property(j => j.BasePrice)
                 .HasPrecision(14, 2);
 
-            modelBuilder.Entity<OrderItem>()
+            model.Entity<Collection>()
+                .Property(c => c.BasePrice)
+                .HasPrecision(14, 2);
+
+            model.Entity<OrderItem>()
                 .Property(oi => oi.UnitPrice)
                 .HasPrecision(14, 2);
 
-            base.OnModelCreating(modelBuilder);
+            model.Entity<Order>()
+                .Property(o => o.Total)
+                .HasPrecision(14, 2);
+
+            model.Entity<InvoiceLine>()
+                .Property(l => l.UnitCost)
+                .HasPrecision(14, 2);
         }
-
-        public DbSet<Jewel> Jewels => Set<Jewel>();
-        public DbSet<Component> Components => Set<Component>();
-        public DbSet<JewelComponent> JewelComponents => Set<JewelComponent>();
-        public DbSet<Order> Orders => Set<Order>();
-        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
-        public DbSet<Design> Designs => Set<Design>();
-
     }
 }

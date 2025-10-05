@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@* Views/Shared/_Layout.cshtml *@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -7,24 +8,59 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
-    <nav class="bg-white shadow-md p-4 flex justify-between items-center">
-        <a href="/" class="text-2xl font-bold text-amber-600">One Jevels</a>
-        <div class="space-x-4">
-            <a href="/" class="hover:text-amber-600">Home</a>
-            <a href="/Home/About" class="hover:text-amber-600">About</a>
-            <a href="/Shop/Collections" class="hover:text-amber-600">Collections</a>
-            <a href="/Shop/Build" class="hover:text-amber-600">Build Your Own</a>
-            <a href="/Designs" class="hover:text-amber-600">Designs</a>
-            <a href="/Cart/Cart" class="hover:text-amber-600">Cart</a>
+    <nav class="bg-white shadow-md px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <a asp-controller="Home" asp-action="Index" class="text-2xl font-bold text-amber-600">One Jevels</a>
+
+            <div class="hidden md:flex items-center gap-5">
+                @* When logged-in user is Admin, show back-office links only *@
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Admin" asp-action="Index" class="font-semibold hover:text-amber-600">Admin</a>
+                    <a asp-controller="Admin" asp-action="NewInvoice" class="hover:text-amber-600">New Invoice</a>
+                    <a asp-controller="Admin" asp-action="Invoices" class="hover:text-amber-600">Invoices</a>
+                    <a asp-controller="Admin" asp-action="Components" class="hover:text-amber-600">Components</a>
+                    <a asp-controller="Admin" asp-action="Jewels" class="hover:text-amber-600">Jewels</a>
+                }
+                else
+                {
+                    <a asp-controller="Home" asp-action="Index" class="hover:text-amber-600">Home</a>
+                    <a asp-controller="Home" asp-action="About" class="hover:text-amber-600">About</a>
+                    <a asp-controller="Shop" asp-action="Collections" class="hover:text-amber-600">Collections</a>
+                    <a asp-controller="Shop" asp-action="Build" class="hover:text-amber-600">Build Your Own</a>
+                    <a asp-controller="Designs" asp-action="Index" class="hover:text-amber-600">Designs</a>
+                    <a asp-controller="Cart" asp-action="Cart" class="hover:text-amber-600">Cart</a>
+                }
+
+                @* Auth block *@
+                @if (User?.Identity?.IsAuthenticated == true)
+                {
+                    <span class="text-gray-500">Hello, @User.Identity!.Name</span>
+                    <form class="inline"
+                          method="post"
+                          asp-area="Identity"
+                          asp-page="/Account/Logout"
+                          asp-route-returnUrl="@Url.Action("Index", "Home")">
+                        <button type="submit" class="text-red-600 hover:underline">Logout</button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login" class="hover:text-amber-600">Login</a>
+                    <a asp-area="Identity" asp-page="/Account/Register" class="hover:text-amber-600">Register</a>
+                }
+            </div>
         </div>
     </nav>
 
-    <div class="container mx-auto mt-8">
+    <main class="container mx-auto mt-8 px-4">
         @RenderBody()
-    </div>
+    </main>
 
     <footer class="mt-12 text-center text-sm text-gray-500 border-t py-4">
         &copy; @DateTime.Now.Year One Jevels Company — Crafted with 💎 precision
     </footer>
+
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

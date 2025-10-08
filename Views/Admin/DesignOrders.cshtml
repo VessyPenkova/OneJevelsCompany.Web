@@ -1,0 +1,60 @@
+﻿@model IEnumerable<OneJevelsCompany.Web.Models.DesignOrder>
+@{
+    ViewData["Title"] = "Design Orders";
+}
+
+<h2 class="text-2xl font-bold text-amber-700 mb-4">Design Orders</h2>
+
+<table class="min-w-full bg-white rounded-2xl overflow-hidden shadow">
+    <thead class="bg-gray-50 text-left">
+        <tr>
+            <th class="px-4 py-2">#</th>
+            <th class="px-4 py-2">Preview</th>
+            <th class="px-4 py-2">Created</th>
+            <th class="px-4 py-2">Customer</th>
+            <th class="px-4 py-2">Cat.</th>
+            <th class="px-4 py-2">Qty</th>
+            <th class="px-4 py-2">Len / mm</th>
+            <th class="px-4 py-2">Cycle / Cap</th>
+            <th class="px-4 py-2">Status</th>
+            <th class="px-4 py-2"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in Model.OrderByDescending(x => x.CreatedUtc))
+        {
+            <tr class="border-t">
+                <td class="px-4 py-2">#@o.Id</td>
+                <td class="px-4 py-2" style="width:120px">
+                    @if (!string.IsNullOrWhiteSpace(o.PreviewDataUrl))
+                    {
+                        <img src="@o.PreviewDataUrl"
+                             alt="preview #@o.Id"
+                             style="width:70px;height:46px;border-radius:8px;border:1px solid #e5e7eb;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <span class="text-gray-400">—</span>
+                    }
+                </td>
+                <td class="px-4 py-2">@o.CreatedUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                <td class="px-4 py-2">
+                    @o.CustomerName
+                    @if (!string.IsNullOrWhiteSpace(o.CustomerEmail))
+                    {
+                        <div class="text-xs text-gray-500">@o.CustomerEmail</div>
+                    }
+                </td>
+                <td class="px-4 py-2">@o.Category</td>
+                <td class="px-4 py-2">@o.Quantity</td>
+                <td class="px-4 py-2">@o.LengthCm.ToString("0.00") cm / @o.BeadMm mm</td>
+                <td class="px-4 py-2">@o.OneCycleBeads / @o.CapacityEstimate</td>
+                <td class="px-4 py-2">@o.Status</td>
+                <td class="px-4 py-2">
+                    <a asp-controller="Admin" asp-action="DesignOrder" asp-route-id="@o.Id"
+                       class="px-3 py-1 rounded bg-amber-600 text-white hover:bg-amber-500">Open</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

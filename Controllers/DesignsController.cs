@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OneJevelsCompany.Web.Models;
-using OneJevelsCompany.Web.Services;
+using OneJevelsCompany.Web.Services.Product;
 
 namespace OneJevelsCompany.Web.Controllers
 {

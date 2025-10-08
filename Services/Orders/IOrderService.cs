@@ -1,6 +1,6 @@
 ﻿using OneJevelsCompany.Web.Models;
 
-namespace OneJevelsCompany.Web.Services
+namespace OneJevelsCompany.Web.Services.Orders
 {
     public interface IOrderService
     {

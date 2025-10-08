@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OneJevelsCompany.Web.Data;
 using OneJevelsCompany.Web.Models;
-using OneJevelsCompany.Web.Services;
+using OneJevelsCompany.Web.Services.Cart;
 using System.Text.Json;
 
 namespace OneJevelsCompany.Web.Controllers

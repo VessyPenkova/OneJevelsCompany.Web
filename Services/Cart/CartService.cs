@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using OneJevelsCompany.Web.Models;
 
-namespace OneJevelsCompany.Web.Services
+namespace OneJevelsCompany.Web.Services.Cart
 {
     public class CartService : ICartService
     {
@@ -12,7 +12,7 @@ namespace OneJevelsCompany.Web.Services
             var json = http.Session.GetString(Key);
             return string.IsNullOrEmpty(json)
                 ? new List<CartItem>()
-                : (JsonSerializer.Deserialize<List<CartItem>>(json) ?? new List<CartItem>());
+                : JsonSerializer.Deserialize<List<CartItem>>(json) ?? new List<CartItem>();
         }
 
         public void AddToCart(HttpContext http, CartItem item)

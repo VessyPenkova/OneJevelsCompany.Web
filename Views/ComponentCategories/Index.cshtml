@@ -1,0 +1,54 @@
+﻿@model IEnumerable<OneJevelsCompany.Web.Controllers.ComponentCategoriesController.CategoryRowVm>
+@{
+    ViewData["Title"] = "Component Categories";
+}
+
+<div class="max-w-5xl mx-auto">
+    <h2 class="text-2xl font-semibold mb-4">Component Categories</h2>
+
+    @if (TempData["ok"] != null)
+    {
+        <div class="mb-3 p-3 rounded bg-green-50 text-green-700">@TempData["ok"]</div>
+    }
+    @if (TempData["err"] != null)
+    {
+        <div class="mb-3 p-3 rounded bg-red-50 text-red-700">@TempData["err"]</div>
+    }
+
+    <div class="mb-4">
+        <a class="px-3 py-2 rounded bg-amber-600 text-white hover:bg-amber-500"
+           href="/Admin/ComponentCategories/Create">New Category</a>
+    </div>
+
+    <table class="min-w-full bg-white rounded-xl shadow">
+        <thead>
+            <tr class="text-left border-b">
+                <th class="p-3">Sort</th>
+                <th class="p-3">Name</th>
+                <th class="p-3"># Components</th>
+                <th class="p-3"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model)
+            {
+                <tr class="border-b">
+                    <td class="p-3">@r.SortOrder</td>
+                    <td class="p-3">@r.Name</td>
+                    <td class="p-3">@r.Components</td>
+                    <td class="p-3">
+                        <a class="px-3 py-1 rounded bg-amber-600 text-white hover:bg-amber-500"
+                           href="/Admin/ComponentCategories/Edit/@r.Id">Edit</a>
+
+                        <form method="post" action="/Admin/ComponentCategories/Delete/@r.Id"
+                              class="inline-block ml-2"
+                              onsubmit="return confirm('Delete this category? This cannot be undone.');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="px-3 py-1 rounded border">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

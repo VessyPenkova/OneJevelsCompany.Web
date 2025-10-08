@@ -1,0 +1,83 @@
+﻿@model IEnumerable<OneJevelsCompany.Web.Controllers.AdminController.PurchaseQueueRowVm>
+@{
+    ViewData["Title"] = "Purchase Queue";
+    var totalItems = (int)(ViewBag.TotalItems ?? 0);
+    var totalCost = (decimal)(ViewBag.TotalSuggestedCost ?? 0m);
+}
+
+<h2 class="text-2xl font-bold text-amber-700 mb-4">Purchase Queue</h2>
+
+<div class="mb-3 flex items-center gap-3">
+    <a asp-controller="Admin" asp-action="Index" class="px-3 py-2 rounded border">Back to Admin</a>
+    <div class="text-sm text-gray-700">
+        Items: <b>@totalItems</b> • Est. cost (suggested): <b>@totalCost.ToString("C")</b>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="rounded border bg-white p-4">No outstanding needs. Great job!</div>
+}
+else
+{
+    <div class="rounded-2xl overflow-hidden shadow bg-white">
+        <table class="min-w-full text-left">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-2">Component</th>
+                    <th class="px-4 py-2">Stock</th>
+                    <th class="px-4 py-2">Needed</th>
+                    <th class="px-4 py-2">MOQ</th>
+                    <th class="px-4 py-2">Suggested</th>
+                    <th class="px-4 py-2">Unit</th>
+                    <th class="px-4 py-2">Est. Cost</th>
+                    <th class="px-4 py-2">Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr class="border-t">
+                        <td class="px-4 py-2">
+                            <div class="flex items-center gap-2">
+                                @if (!string.IsNullOrWhiteSpace(r.ImageUrl))
+                                {
+                                    <img src="@r.ImageUrl" style="width:36px;height:36px;border-radius:9999px;object-fit:cover;border:1px solid #eee" />
+                                }
+                                <div>
+                                    <div class="font-medium">@r.Name</div>
+                                    <div class="text-xs text-gray-500">
+                                        @if (!string.IsNullOrWhiteSpace(r.Sku))
+                                        {
+                                            <span>SKU: @r.Sku • </span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(r.SizeLabel))
+                                        {
+                                            <span>@r.SizeLabel • </span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(r.Dimensions))
+                                        {
+                                            <span>@r.Dimensions</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-2">@r.Stock</td>
+                        <td class="px-4 py-2">@r.NeededQty</td>
+                        <td class="px-4 py-2">@r.MinOrderQty</td>
+                        <td class="px-4 py-2 font-medium">@r.SuggestedQty</td>
+                        <td class="px-4 py-2">@r.Price.ToString("C")</td>
+                        <td class="px-4 py-2">@((r.SuggestedQty * r.Price).ToString("C"))</td>
+                        <td class="px-4 py-2 text-sm text-gray-500">@r.LastUpdatedUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <p class="text-xs text-gray-500 mt-3">
+        Suggested quantity = rounded up to component MOQ (Min Order Qty).
+        This is only a planning list; you will decide suppliers and split items across invoices.
+    </p>
+}

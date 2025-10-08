@@ -2,26 +2,48 @@
 @{
     ViewData["Title"] = "Components";
 }
-<h2 class="text-2xl font-bold text-amber-600 mb-4">Components</h2>
-<a href="/Admin/NewInvoice" class="px-3 py-2 rounded bg-amber-600 text-white">Receive via Invoice</a>
-<table class="w-full table-auto bg-white rounded shadow mt-4">
-    <thead class="bg-amber-100">
-        <tr>
-            <th class="p-2 text-left">Type</th>
-            <th class="p-2 text-left">Name</th>
-            <th class="p-2 text-left">Price</th>
-            <th class="p-2 text-left">Stock</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var c in Model)
-        {
-            <tr class="border-t">
-                <td class="p-2">@c.Category</td>
-                <td class="p-2">@c.Name</td>
-                <td class="p-2">@c.Price.ToString("C")</td>
-                <td class="p-2">@c.QuantityOnHand</td>
+
+<div class="max-w-6xl mx-auto">
+    <h2 class="text-2xl font-semibold mb-4">Components</h2>
+
+    @if (TempData["ok"] != null)
+    {
+        <div class="mb-3 p-3 rounded bg-green-50 text-green-700">@TempData["ok"]</div>
+    }
+
+    <div class="mb-4">
+        <a class="px-3 py-2 rounded bg-amber-600 text-white hover:bg-amber-500" href="/Admin/ReceiveViaInvoice">
+            Receive via Invoice
+        </a>
+    </div>
+
+    <table class="min-w-full bg-white rounded-xl shadow">
+        <thead>
+            <tr class="text-left border-b">
+                <th class="p-3">Type</th>
+                <th class="p-3">Name</th>
+                <th class="p-3">Price</th>
+                <th class="p-3">Stock</th>
+                <th class="p-3"></th> <!-- Actions -->
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr class="border-b">
+                    <td class="p-3">@c.Category?.Name</td>
+                    <td class="p-3">@c.Name</td>
+                    <td class="p-3">@c.Price.ToString("C")</td>
+                    <td class="p-3">@c.QuantityOnHand</td>
+                    <td class="p-3">
+                        <!-- The Edit link you need -->
+                        <a class="btn btn-sm" 
+                        asp-controller="Components"
+                        asp-action="Edit" 
+                        asp-route-id="@c.Id">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

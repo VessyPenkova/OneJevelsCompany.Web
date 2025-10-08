@@ -5,7 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Identity;
 using OneJevelsCompany.Web.Data;
-using OneJevelsCompany.Web.Services;
+using OneJevelsCompany.Web.Services.Cart;
+using OneJevelsCompany.Web.Services.Inventory;
+using OneJevelsCompany.Web.Services.Orders;
+using OneJevelsCompany.Web.Services.Payment;
+using OneJevelsCompany.Web.Services.Product;
 
 var builder = WebApplication.CreateBuilder(args);
 

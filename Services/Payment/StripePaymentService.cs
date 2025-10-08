@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace OneJevelsCompany.Web.Services
+namespace OneJevelsCompany.Web.Services.Payment
 {
     public class StripePaymentService : IPaymentService
     {

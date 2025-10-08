@@ -4,13 +4,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - One Jevels Company</title>
+    <title>@ViewData["Title"] - One Jewellery Company</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="~/css/champagne-theme.css" asp-append-version="true" />
+
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
     <nav class="bg-white shadow-md px-4 py-3">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <a asp-controller="Home" asp-action="Index" class="text-2xl font-bold text-amber-600">One Jevels</a>
+            <a asp-controller="Home" asp-action="Index" class="text-2xl font-bold text-amber-600">One Jewellery Company</a>
 
             <div class="hidden md:flex items-center gap-5">
                 @* When logged-in user is Admin, show back-office links only *@
@@ -58,7 +60,7 @@
     </main>
 
     <footer class="mt-12 text-center text-sm text-gray-500 border-t py-4">
-        &copy; @DateTime.Now.Year One Jevels Company — Crafted with 💎 precision
+        &copy; @DateTime.Now.Year One Jewellery Company — Crafted with 💎 precision
     </footer>
 
     @RenderSection("Scripts", required: false)

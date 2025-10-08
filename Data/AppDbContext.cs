@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OneJevelsCompany.Web.Models;
+using System.Reflection.Emit;
 
 namespace OneJevelsCompany.Web.Data
 {
@@ -16,6 +17,9 @@ namespace OneJevelsCompany.Web.Data
         public DbSet<JewelComponent> JewelComponents => Set<JewelComponent>();
         public DbSet<Design> Designs => Set<Design>();
         public DbSet<Collection> Collections => Set<Collection>();
+        //NEW
+        public DbSet<PurchaseNeed> PurchaseNeeds { get; set; } = null!;
+
 
         // Orders
         public DbSet<Order> Orders => Set<Order>();
@@ -24,6 +28,9 @@ namespace OneJevelsCompany.Web.Data
         // Inventory / Receiving
         public DbSet<Invoice> Invoices => Set<Invoice>();
         public DbSet<InvoiceLine> InvoiceLines => Set<InvoiceLine>();
+
+        // Custom design orders (Design Studio)
+        public DbSet<DesignOrder> DesignOrders => Set<DesignOrder>();
 
         protected override void OnModelCreating(ModelBuilder model)
         {
@@ -95,6 +102,47 @@ namespace OneJevelsCompany.Web.Data
             model.Entity<InvoiceLine>()
                 .Property(l => l.UnitCost)
                 .HasPrecision(14, 2);
+
+            // ----- DesignOrder extras (precision + useful indexes)
+            model.Entity<DesignOrder>()
+                .Property(d => d.UnitPriceEstimate)
+                .HasPrecision(14, 2);
+
+            model.Entity<DesignOrder>()
+                .Property(d => d.LengthCm)
+                .HasPrecision(6, 2); // e.g. 12.00 .. 25.00
+
+            model.Entity<DesignOrder>()
+                .HasIndex(d => d.CreatedUtc);
+
+            model.Entity<DesignOrder>()
+                .HasIndex(d => d.Status);
+            model.Entity<JewelComponent>()
+                .HasKey(jc => new { jc.JewelId, jc.ComponentId });
+
+            // Component defaults
+            model.Entity<Component>()
+                .Property(c => c.MinOrderQty)
+                .HasDefaultValue(120);
+
+            // PurchaseNeed
+            model.Entity<PurchaseNeed>(b =>
+            {
+                b.ToTable("PurchaseNeeds");
+                b.HasKey(p => p.Id);
+
+                b.Property(p => p.NeededQty).HasDefaultValue(0);
+                b.Property(p => p.MinOrderQtyUsed).HasDefaultValue(0);
+                b.Property(p => p.CreatedUtc).HasDefaultValueSql("GETUTCDATE()");
+                b.Property(p => p.LastUpdatedUtc).HasDefaultValueSql("GETUTCDATE()");
+
+                b.HasOne(p => p.Component)
+                    .WithMany() // not a required navigation on Component
+                    .HasForeignKey(p => p.ComponentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasIndex(p => p.ComponentId);
+            });
         }
     }
 }

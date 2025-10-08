@@ -23,5 +23,14 @@ namespace OneJevelsCompany.Web.Models
         public int QuantityOnHand { get; set; } = 0;
 
         public ICollection<JewelComponent> Jewels { get; set; } = new List<JewelComponent>();
+
+        // NEW 
+        [MaxLength(4000)]
+        public string? Description { get; set; }
+
+        // NEW
+        [Range(1, 100000)]
+        public int MinOrderQty { get; set; } = 120;
+
     }
 }

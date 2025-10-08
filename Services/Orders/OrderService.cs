@@ -2,7 +2,7 @@
 using OneJevelsCompany.Web.Data;
 using OneJevelsCompany.Web.Models;
 
-namespace OneJevelsCompany.Web.Services
+namespace OneJevelsCompany.Web.Services.Orders
 {
     public class OrderService : IOrderService
     {

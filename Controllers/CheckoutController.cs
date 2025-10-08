@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OneJevelsCompany.Web.Services;
+using OneJevelsCompany.Web.Services.Cart;
+using OneJevelsCompany.Web.Services.Inventory;
+using OneJevelsCompany.Web.Services.Orders;
+using OneJevelsCompany.Web.Services.Payment;
 using System.Linq;
 using System.Threading.Tasks;
 

@@ -1,4 +1,4 @@
-﻿namespace OneJevelsCompany.Web.Services
+﻿namespace OneJevelsCompany.Web.Services.Payment
 {
     public interface IPaymentService
     {

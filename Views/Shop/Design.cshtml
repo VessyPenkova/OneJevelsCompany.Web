@@ -1,0 +1,550 @@
+﻿@model IEnumerable<OneJevelsCompany.Web.Models.Component>
+@using System.Text.RegularExpressions
+@{
+    ViewData["Title"] = "Design Studio";
+    // Improved size extractor: understands "4 mm", "4мм", "Ø4", "4x4"/"4×4", "dia 6", etc.
+    string SizeGuess(OneJevelsCompany.Web.Models.Component c)
+    {
+        var s = $"{c.SizeLabel} {c.Dimensions}".Trim();
+        if (string.IsNullOrWhiteSpace(s)) return "8";
+
+        // 1) Explicit "mm" (Latin) or "мм" (Cyrillic)
+        var m = Regex.Match(s, @"(?i)\b(\d{1,2})\s*(mm|мм)\b");
+        if (m.Success) return m.Groups[1].Value;
+
+        // 2) "Ø4" / "ø 10"
+        m = Regex.Match(s, @"(?i)[Øø]\s*(\d{1,2})\b");
+        if (m.Success) return m.Groups[1].Value;
+
+        // 3) "4x4" / "4×4" / "4 x 4"  → take the first number as diameter
+        m = Regex.Match(s, @"(?i)\b(\d{1,2})\s*[x×]\s*\d{1,2}\b");
+        if (m.Success) return m.Groups[1].Value;
+
+        // 4) "dia 6", "diameter 6", "φ 6"
+        m = Regex.Match(s, @"(?i)\b(dia(meter)?|φ)\s*(\d{1,2})\b");
+        if (m.Success) return m.Groups[3].Value;
+
+        // 5) Fallback: first reasonable number (2–24)
+        m = Regex.Match(s, @"\b([2-9]|1\d|2[0-4])\b");
+        if (m.Success) return m.Groups[1].Value;
+
+        return "8"; // final fallback
+    }
+}
+
+<div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-amber-700">Design Studio</h1>
+            <p class="text-gray-600">Create a bead sequence, set bracelet length & bead size, and preview in 3D angle.</p>
+        </div>
+        <a asp-controller="Shop" asp-action="Build" class="px-4 py-2 rounded border">Back to Build</a>
+    </div>
+
+    <!-- Controls -->
+    <div class="grid md:grid-cols-4 gap-4 bg-white p-4 rounded-2xl shadow">
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">Bracelet length (cm)</label>
+            <input id="lengthCm" type="number" value="18" min="12" max="25" step="0.5" class="w-full border rounded p-2" />
+        </div>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">Avg. bead size (mm)</label>
+            <input id="beadMm" type="number" value="8" min="4" max="14" class="w-full border rounded p-2" />
+        </div>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">Rendered size (px)</label>
+            <input id="pxSize" type="range" min="18" max="48" value="32" class="w-full" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Tilt</label>
+                <input id="tilt" type="range" min="45" max="90" value="65" class="w-full" />
+            </div>
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Rotation</label>
+                <input id="rotate" type="range" min="-45" max="45" value="-10" class="w-full" />
+            </div>
+        </div>
+        <div class="md:col-span-4 flex items-center gap-4 pt-2">
+            <label class="inline-flex items-center gap-2">
+                <input id="modeLine" type="radio" name="mode" value="line" />
+                <span>Line</span>
+            </label>
+            <label class="inline-flex items-center gap-2">
+                <input id="modeCircle" type="radio" name="mode" value="circle" checked />
+                <span>Circle</span>
+            </label>
+            <label class="inline-flex items-center gap-2">
+                <input id="autoFill" type="checkbox" checked />
+                <span>Auto-fill to capacity</span>
+            </label>
+            <div id="capacity" class="text-sm text-gray-700 ml-auto"></div>
+        </div>
+    </div>
+
+    <!-- Palette -->
+    <div class="bg-white p-4 rounded-2xl shadow">
+        <h2 class="text-lg font-semibold mb-3">Palette</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            @foreach (var c in Model.OrderBy(x => x.Category?.SortOrder ?? 999).ThenBy(x => x.Name))
+            {
+                var mm = SizeGuess(c);
+                <div class="border rounded-xl p-3 flex gap-3 items-center">
+                    <img src="@(!string.IsNullOrWhiteSpace(c.ImageUrl) ? c.ImageUrl : Url.Content("~/Images/MainBackground.png"))"
+                         alt="@c.Name" class="w-12 h-12 rounded-full object-cover ring-1 ring-gray-200" />
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium truncate" title="@c.Name">@c.Name</div>
+                        <div class="text-xs text-gray-600">@c.Color @c.SizeLabel @c.Dimensions</div>
+                    </div>
+                    <button class="add-btn px-3 py-2 rounded bg-amber-600 text-white"
+                            data-id="@c.Id"
+                            data-name="@c.Name"
+                            data-img="@(c.ImageUrl ?? Url.Content("~/Images/MainBackground.png"))"
+                            data-mm="@mm"
+                            type="button">
+                        Add
+                    </button>
+                </div>
+            }
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Tip: “Add” puts a row into the pattern (below). Use counts & arrows to arrange one full cycle. The studio can repeat it to fill the chosen length.</p>
+    </div>
+
+    <!-- Pattern -->
+    <div class="bg-white p-4 rounded-2xl shadow space-y-3">
+        <h2 class="text-lg font-semibold">Pattern (one cycle)</h2>
+        <div id="rows" class="space-y-2"></div>
+        <template id="row-template">
+            <div class="row flex items-center gap-3 border rounded-xl p-2">
+                <img class="thumb w-10 h-10 rounded-full object-cover ring-1 ring-gray-200" />
+                <div class="flex-1 min-w-0">
+                    <div class="name font-medium truncate"></div>
+                    <div class="text-xs text-gray-500">mm: <span class="mm"></span></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-sm text-gray-600">Count</label>
+                    <input class="count w-20 border rounded p-2" type="number" min="1" value="4" />
+                </div>
+                <div class="flex items-center gap-1">
+                    <button class="up px-2 py-1 border rounded" type="button">↑</button>
+                    <button class="down px-2 py-1 border rounded" type="button">↓</button>
+                    <button class="remove px-2 py-1 border rounded text-red-600" type="button">✕</button>
+                </div>
+            </div>
+        </template>
+        <div class="text-xs text-gray-500">Adjust counts and order — the whole cycle will repeat.</div>
+    </div>
+
+    <!-- Preview -->
+    <div class="bg-white p-4 rounded-2xl shadow">
+        <h2 class="text-lg font-semibold mb-2">Preview</h2>
+        <div id="previewWrap" class="relative" style="min-height: 340px;">
+            <canvas id="preview" class="w-full h-full block"></canvas>
+        </div>
+        <div id="totals" class="text-sm text-gray-700 mt-2"></div>
+
+        <div class="mt-4 flex justify-end">
+            <button id="btnProceed" type="button"
+                    class="px-5 py-3 rounded-lg bg-amber-600 text-white hover:bg-amber-500">
+                Proceed to Order
+            </button>
+        </div>
+
+        <!-- Order form -->
+        <div id="orderForm" class="hidden mt-4 border rounded-2xl p-4">
+            <h3 class="text-lg font-semibold mb-3">Send Design to Admin</h3>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Quantity</label>
+                    <input id="qty" type="number" min="1" value="1" class="w-full border rounded p-2" />
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Your name (optional)</label>
+                    <input id="cName" type="text" class="w-full border rounded p-2" />
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Email (optional)</label>
+                    <input id="cEmail" type="email" class="w-full border rounded p-2" />
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Phone (optional)</label>
+                    <input id="cPhone" type="text" class="w-full border rounded p-2" />
+                </div>
+            </div>
+
+            <div class="mt-4 flex items-center gap-3">
+                <button id="btnSend" type="button"
+                        class="px-5 py-3 rounded-lg bg-amber-600 text-white hover:bg-amber-500"
+                        onclick="return sendToAdmin();">
+                    Send to Admin
+                </button>
+                <span id="submitMsg" class="text-sm text-gray-600"></span>
+            </div>
+
+            <div id="successBanner" class="hidden mt-3 rounded border border-green-300 bg-green-50 text-green-800 px-3 py-2">
+                Your order has been submitted. We’ll contact you about delivery.
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            // ----------------- State -----------------
+            const rowsEl = document.getElementById('rows');
+            const tpl = document.getElementById('row-template');
+
+            const wrap   = document.getElementById('previewWrap');
+            const canvas = document.getElementById('preview');
+            const ctx    = canvas.getContext('2d');
+
+            const lengthInp = document.getElementById('lengthCm');
+            const beadMmInp = document.getElementById('beadMm');
+            const pxSizeInp = document.getElementById('pxSize');
+            const tiltInp   = document.getElementById('tilt');
+            const rotateInp = document.getElementById('rotate');
+            const modeLine  = document.getElementById('modeLine');
+            const modeCircle= document.getElementById('modeCircle');
+            const autoFill  = document.getElementById('autoFill');
+            const capacityEl= document.getElementById('capacity');
+            const totalsEl  = document.getElementById('totals');
+
+            const pattern = []; // [{id,name,img,mm,count}]
+            window.__pattern = pattern; // exposed for sender
+
+            document.getElementById('btnProceed').addEventListener('click', () => {
+                const f = document.getElementById('orderForm');
+                f.classList.remove('hidden');
+                f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+
+            // ----------------- Add from palette -----------------
+            document.querySelectorAll('.add-btn').forEach(b => {
+                b.addEventListener('click', () => {
+                    const item = {
+                        id: parseInt(b.dataset.id,10),
+                        name: b.dataset.name,
+                        img: b.dataset.img,
+                        mm : parseFloat(b.dataset.mm || '8'),
+                        count: 4
+                    };
+                    pattern.push(item);
+                    renderRows();
+                    draw();
+                });
+            });
+
+            // ----------------- Rows render / wiring -----------------
+            function renderRows() {
+                rowsEl.innerHTML = '';
+                pattern.forEach((p, idx) => {
+                    const n = tpl.content.cloneNode(true);
+                    n.querySelector('.thumb').src = p.img;
+                    n.querySelector('.name').textContent = p.name;
+                    n.querySelector('.mm').textContent = p.mm.toFixed(0);
+
+                    const count = n.querySelector('.count');
+                    count.value = p.count;
+                    count.addEventListener('input', () => {
+                        p.count = Math.max(1, parseInt(count.value||'1',10));
+                        draw();
+                    });
+
+                    n.querySelector('.up').addEventListener('click', () => {
+                        if (idx > 0) { [pattern[idx-1], pattern[idx]] = [pattern[idx], pattern[idx-1]]; renderRows(); draw(); }
+                    });
+                    n.querySelector('.down').addEventListener('click', () => {
+                        if (idx < pattern.length-1) { [pattern[idx+1], pattern[idx]] = [pattern[idx], pattern[idx+1]]; renderRows(); draw(); }
+                    });
+                    n.querySelector('.remove').addEventListener('click', () => {
+                        pattern.splice(idx,1); renderRows(); draw();
+                    });
+                    rowsEl.appendChild(n);
+                });
+            }
+
+            // ----------------- Capacity -----------------
+            function capacity(lengthCm, beadMm) {
+                const usableMm = lengthCm * 10;
+                const spacing  = 1.05;
+                return Math.max(1, Math.floor(usableMm / (beadMm * spacing)));
+            }
+
+            // Expand one cycle
+            function expandOneCycle() {
+                const seq = [];
+                for (const p of pattern) for (let i = 0; i < p.count; i++) seq.push(p);
+                return seq;
+            }
+
+            function buildSequence() {
+                const one = expandOneCycle();
+                if (one.length === 0) return [];
+
+                const L = parseFloat(lengthInp.value || '18');
+                const M = parseFloat(beadMmInp.value || '8');
+                const cap = capacity(L, M);
+                capacityEl.textContent = `Capacity ~ ${cap} beads (length ${L} cm, ${M} mm)`;
+
+                if (!autoFill.checked) return one;
+
+                const seq = [];
+                while (seq.length + one.length <= cap) seq.push(...one);
+                for (let i = 0; i < one.length && seq.length < cap; i++) seq.push(one[i]);
+                return seq;
+            }
+
+            // ----------------- Canvas sizing -----------------
+            function resizeCanvas() {
+                const cssW = wrap.clientWidth;
+                const cssH = Math.max(320, Math.min(560, Math.round(cssW * 0.42)));
+
+                const dpr = window.devicePixelRatio || 1;
+                canvas.style.width  = cssW + 'px';
+                canvas.style.height = cssH + 'px';
+                canvas.width  = Math.floor(cssW * dpr);
+                canvas.height = Math.floor(cssH * dpr);
+
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+
+            // ----------------- Drawing helpers -----------------
+            function drawBead(x, y, rPx, img) {
+                ctx.save();
+                ctx.fillStyle = 'rgba(0,0,0,0.18)';
+                ctx.beginPath();
+                ctx.ellipse(x, y + rPx*0.45, rPx*0.9, rPx*0.5, 0, 0, Math.PI*2);
+                ctx.fill();
+                ctx.restore();
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(x, y, rPx, 0, Math.PI*2);
+                ctx.clip();
+
+                if (img && img.complete) {
+                    ctx.drawImage(img, x - rPx, y - rPx, rPx*2, rPx*2);
+                } else {
+                    const grad = ctx.createRadialGradient(x - rPx*0.4, y - rPx*0.6, rPx*0.2, x, y, rPx);
+                    grad.addColorStop(0, '#ffffff');
+                    grad.addColorStop(0.15, '#f8f8f8');
+                    grad.addColorStop(1, '#cccccc');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(x - rPx, y - rPx, rPx*2, rPx*2);
+                }
+
+                const gloss = ctx.createRadialGradient(x - rPx*0.5, y - rPx*0.7, 0, x - rPx*0.5, y - rPx*0.7, rPx);
+                gloss.addColorStop(0, 'rgba(255,255,255,0.85)');
+                gloss.addColorStop(0.25, 'rgba(255,255,255,0.35)');
+                gloss.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.fillStyle = gloss;
+                ctx.beginPath();
+                ctx.arc(x, y, rPx, 0, Math.PI*2);
+                ctx.fill();
+
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.lineWidth = Math.max(1, rPx*0.08);
+                ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+                ctx.beginPath();
+                ctx.arc(x, y, rPx-ctx.lineWidth/2, 0, Math.PI*2);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            const imgCache = new Map();
+            function getImg(url) {
+                if (!url) return null;
+                if (imgCache.has(url)) return imgCache.get(url);
+                const i = new Image();
+                // Only set crossOrigin for off-origin URLs to avoid tainting on same-origin assets
+                try {
+                    const u = new URL(url, window.location.origin);
+                    if (u.origin !== window.location.origin) i.crossOrigin = 'anonymous';
+                } catch { /* ignore */ }
+                i.onload = () => draw();
+                i.src = url;
+                imgCache.set(url, i);
+                return i;
+            }
+
+            function draw() {
+                resizeCanvas();
+
+                const w = canvas.clientWidth;
+                const h = canvas.clientHeight;
+                ctx.clearRect(0, 0, w, h);
+
+                const seq = buildSequence();
+
+                const maxBead = Math.min(w, h) / 10;
+                let px = parseInt(pxSizeInp.value, 10);
+                px = Math.min(px, Math.floor(maxBead * 2));
+                pxSizeInp.value = px;
+                const rPx = Math.max(8, Math.floor(px/2));
+
+                if (modeLine.checked) {
+                    const margin = Math.max(24, rPx * 1.2);
+                    const startX = margin;
+                    const endX   = w - margin;
+                    const usable = Math.max(1, endX - startX);
+                    const step   = seq.length > 1 ? usable / (seq.length - 1) : 0;
+                    const y = h / 2;
+
+                    seq.forEach((p, i) => {
+                        const x = startX + i * step;
+                        drawBead(x, y, rPx, getImg(p.img));
+                    });
+                } else {
+                    const tiltDeg = parseInt(tiltInp.value,10);
+                    const rotDeg  = parseInt(rotateInp.value,10);
+                    const tilt    = Math.max(0.4, Math.min(1, (tiltDeg/90)));
+                    const rot     = rotDeg * Math.PI/180;
+
+                    const cx = w/2, cy = h/2 + 10;
+
+                    const SCALE = 0.75;
+                    const ringRadius = Math.min(w, h*1.6) / 2 - rPx*1.6;
+                    const rx = Math.max(rPx*1.5, ringRadius * SCALE);
+                    const ry = rx * tilt;
+
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(rot);
+                    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+                    ctx.beginPath();
+                    ctx.ellipse(0, ry*1.05, rx*0.95, ry*0.35, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.restore();
+
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(rot);
+                    const base = ctx.createLinearGradient(0, -ry, 0, ry);
+                    base.addColorStop(0, '#f6f6f6');
+                    base.addColorStop(0.5, '#ffffff');
+                    base.addColorStop(1, '#e7e7e7');
+                    ctx.strokeStyle = base;
+                    ctx.lineWidth = rPx * 0.35;
+                    ctx.beginPath();
+                    ctx.ellipse(0,0, rx, ry, 0, 0, Math.PI*2);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    const n = Math.max(1, seq.length);
+                    for (let i=0;i<n;i++) {
+                        const t = -Math.PI/2 + (i/n)*Math.PI*2;
+                        const x = cx + rx * Math.cos(t+rot);
+                        const y = cy + ry * Math.sin(t+rot);
+                        drawBead(x, y, rPx, getImg(seq[i].img));
+                    }
+                }
+
+                const cycle = expandOneCycle().length;
+                totalsEl.textContent = `One cycle: ${cycle} bead(s) — Previewing: ${seq.length} bead(s).`;
+            }
+
+            [lengthInp, beadMmInp, pxSizeInp, tiltInp, rotateInp, modeLine, modeCircle, autoFill]
+                .forEach(el => el.addEventListener('input', draw));
+
+            window.addEventListener('resize', draw);
+
+            renderRows();
+            draw();
+
+            // double-wire just in case inline is removed
+            document.getElementById('btnSend').addEventListener('click', () => sendToAdmin());
+        })();
+
+        // ====================================================================
+        //  GLOBAL sender — posts JSON + canvas screenshot to /Shop/SubmitDesign
+        // ====================================================================
+        async function sendToAdmin() {
+            const btnSend      = document.getElementById('btnSend');
+            const submitMsg    = document.getElementById('submitMsg');
+            const successBanner= document.getElementById('successBanner');
+
+            try {
+                submitMsg.textContent = 'Submitting…';
+                btnSend.disabled = true;
+                btnSend.textContent = 'Sending…';
+
+                const pattern = Array.isArray(window.__pattern) ? window.__pattern : [];
+                if (pattern.length === 0) {
+                    alert('Add at least one row to the pattern before submitting.');
+                    submitMsg.textContent = '';
+                    btnSend.textContent = 'Send to Admin';
+                    btnSend.disabled = false;
+                    return false;
+                }
+
+                const rows = pattern.map(p => ({
+                    componentId: p.id,
+                    count: Math.max(1, p.count|0),
+                    mm: Math.max(1, Math.round(p.mm || 8))
+                }));
+
+                const payload = {
+                    category: "Bracelet",
+                    quantity: Math.max(1, parseInt((document.getElementById('qty').value || '1'), 10)),
+                    lengthCm: parseFloat(document.getElementById('lengthCm').value || '18'),
+                    beadMm: parseInt(document.getElementById('beadMm').value || '8', 10),
+                    mode: document.getElementById('modeCircle').checked ? 'circle' : 'line',
+                    tilt: parseInt(document.getElementById('tilt').value, 10),
+                    rotate: parseInt(document.getElementById('rotate').value, 10),
+                    unitPriceEstimate: null,
+                    customerName:  document.getElementById('cName').value || null,
+                    customerEmail: document.getElementById('cEmail').value || null,
+                    customerPhone: document.getElementById('cPhone').value || null,
+                    rows
+                };
+
+                // Include preview PNG (data URL). Safe if canvas exists.
+                try {
+                    const canvas = document.getElementById('preview');
+                    if (canvas && canvas.toDataURL) {
+                        payload.previewDataUrl = canvas.toDataURL('image/png');
+                    }
+                } catch { /* ignore */ }
+
+                const res = await fetch('/Shop/SubmitDesign', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const msg = await res.text();
+                    throw new Error(msg || ('HTTP ' + res.status));
+                }
+
+                let data = null;
+                const ct = res.headers.get('content-type') || '';
+                if (ct.includes('application/json')) {
+                    data = await res.json();
+                }
+
+                btnSend.textContent = 'Sent ✓';
+                successBanner.classList.remove('hidden');
+                submitMsg.textContent = 'Order submitted. Redirecting…';
+                setTimeout(() => {
+                    const to = (data && data.redirect) ? data.redirect : '/MyPendingOrders';
+                    window.location.href = to;
+                }, 1200);
+
+            } catch (err) {
+                console.error('Submit failed:', err);
+                alert('Could not submit the design. Please try again.');
+                submitMsg.textContent = 'Submit failed.';
+                btnSend.textContent = 'Send to Admin';
+            } finally {
+                btnSend.disabled = false;
+            }
+            return false;
+        }
+    </script>
+}

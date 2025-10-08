@@ -1,0 +1,45 @@
+﻿@using OneJevelsCompany.Web.Models
+@model ComponentDetailsVm
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Description))
+{
+    <div class="prose max-w-none text-gray-700 leading-relaxed mt-4">
+        @Model.Description
+    </div>
+}
+
+
+<div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow">
+    <div class="flex flex-col items-center gap-4">
+        <img src="@Model.ImageUrl" alt="@Model.Name" class="w-28 h-28 rounded-full object-cover" />
+        <h1 class="text-3xl italic tracking-wide">@Model.Name.ToUpper()</h1>
+        <hr class="w-full border-gray-300" />
+        <div class="prose max-w-none text-gray-700 leading-relaxed">
+            @Html.Raw(Html.Encode(Model.Description))
+        </div>
+
+        <div class="mt-6 text-center text-gray-600">
+            @if (!string.IsNullOrWhiteSpace(Model.Color))
+            {
+                <div>@Model.Color</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.SizeLabel))
+            {
+                <div>@Model.SizeLabel</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Dimensions))
+            {
+                <div>@Model.Dimensions</div>
+            }
+        </div>
+
+        <div class="mt-8 flex gap-3">
+            <a asp-action="Configure" asp-route-id="@Model.Id"
+               class="px-6 py-3 rounded-lg bg-amber-600 text-white hover:bg-amber-500">Поръчай</a>
+            <a asp-action="Build" class="px-6 py-3 rounded-lg border">Назад</a>
+        </div>
+    </div>
+</div>

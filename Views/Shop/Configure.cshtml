@@ -1,0 +1,54 @@
+﻿@using OneJevelsCompany.Web.Models
+@model ConfigureComponentVm
+@{
+    ViewData["Title"] = "Поръчай " + Model.Name;
+}
+
+<form asp-action="Configure" method="post" class="max-w-3xl mx-auto bg-amber-50 p-6 rounded-2xl shadow space-y-6">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div class="flex items-center gap-4">
+        <img src="@Model.ImageUrl" alt="@Model.Name" class="w-20 h-20 rounded-lg object-cover" />
+        <div>
+            <div class="text-2xl font-semibold">@Model.Name</div>
+            <div class="text-gray-600">Price: @Model.Price.ToString("C")</div>
+        </div>
+    </div>
+
+    <div>
+        <div class="font-medium mb-2">Choose dimentins</div>
+        <div class="flex flex-wrap gap-2">
+            @foreach (var d in Model.DimensionOptions)
+            {
+                var id = "dim-" + d.Replace(" ", "").Replace("x", "x");
+                <input type="radio" class="hidden peer" name="SelectedDimension" id="@id" value="@d" @(d == Model.DimensionOptions.First() ? "checked" : "") />
+                <label for="@id" class="px-4 py-2 rounded-lg border bg-white peer-checked:ring-2 peer-checked:ring-amber-400 cursor-pointer">@d</label>
+            }
+        </div>
+        <span asp-validation-for="SelectedDimension" class="text-red-600 text-sm"></span>
+    </div>
+
+    <div>
+        <div class="font-medium mb-2">Choose quantity</div>
+        <select asp-for="Quantity" class="w-40 border rounded p-2">
+            @for (int i = 1; i <= Math.Min(Model.MaxQty, 10); i++)
+            {
+                <option value="@i">@i</option>
+            }
+            @if (Model.MaxQty > 10)
+            {
+                <option value="10">10+</option>
+            }
+        </select>
+        <span class="text-sm text-gray-500 ml-2">Налично: @Model.MaxQty</span>
+        <span asp-validation-for="Quantity" class="text-red-600 text-sm"></span>
+    </div>
+
+    <div class="flex gap-3">
+        <button type="submit" class="px-6 py-3 rounded-lg bg-amber-600 text-white hover:bg-amber-500">
+            Поръчай
+        </button>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="px-6 py-3 rounded-lg border">Разгледай</a>
+    </div>
+</form>

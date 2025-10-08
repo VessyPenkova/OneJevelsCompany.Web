@@ -1,21 +1,43 @@
 ﻿@model IEnumerable<OneJevelsCompany.Web.Models.Jewel>
+@using OneJevelsCompany.Web.Models
 @{
     ViewData["Title"] = "Jewels";
 }
-<h2 class="text-2xl font-bold text-amber-600 mb-4">Jewels</h2>
-<a href="/Admin/NewInvoice" class="px-3 py-2 rounded bg-amber-600 text-white">Receive via Invoice</a>
-<table class="w-full table-auto bg-white rounded shadow mt-4">
-    <thead class="bg-amber-100">
+
+<div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-semibold">Jewels</h1>
+    <a asp-action="NewJewel" class="px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-500">New Jewel</a>
+</div>
+
+<table class="min-w-full bg-white rounded shadow overflow-hidden">
+    <thead class="bg-amber-50">
         <tr>
-            <th class="p-2 text-left">Name</th>
-            <th class="p-2 text-left">Category</th>
-            <th class="p-2 text-left">Stock</th>
+            <th class="p-3 text-left w-24">Image</th>
+            <th class="p-3 text-left">Name</th>
+            <th class="p-3 text-left">Category</th>
+            <th class="p-3 text-right">Base Price</th>
+            <th class="p-3 text-right">Stock</th>
+            <th class="p-3"></th>
         </tr>
     </thead>
     <tbody>
         @foreach (var j in Model)
         {
-            <tr class="border-t"><td class="p-2">@j.Name</td><td class="p-2">@j.Category</td><td class="p-2">@j.QuantityOnHand</td></tr>
+            <tr class="border-t">
+                <td class="p-3">
+                    @if (!string.IsNullOrWhiteSpace(j.ImageUrl))
+                    {
+                        <img src="@j.ImageUrl" class="w-16 h-16 object-cover rounded" alt="@j.Name" />
+                    }
+                </td>
+                <td class="p-3">@j.Name</td>
+                <td class="p-3">@j.Category</td>
+                <td class="p-3 text-right">@j.BasePrice.ToString("C")</td>
+                <td class="p-3 text-right">@j.QuantityOnHand</td>
+                <td class="p-3 text-right">
+                    <a asp-action="EditJewel" asp-route-id="@j.Id" class="text-amber-700 hover:underline">Edit</a>
+                </td>
+            </tr>
         }
     </tbody>
 </table>

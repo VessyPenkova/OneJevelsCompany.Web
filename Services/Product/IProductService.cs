@@ -1,6 +1,6 @@
 ﻿using OneJevelsCompany.Web.Models;
 
-namespace OneJevelsCompany.Web.Services
+namespace OneJevelsCompany.Web.Services.Product
 {
     public interface IProductService
     {
@@ -10,5 +10,8 @@ namespace OneJevelsCompany.Web.Services
         Task<string> DescribeComponentsAsync(IEnumerable<int> componentIds);
         Task<List<Design>> GetBestDesignsAsync(JewelCategory? category = null);
         Task<Jewel?> GetJewelAsync(int id);
+
+        // NEW: needed by ShopController -> Details/Configure
+        Task<Component?> GetComponentAsync(int id);
     }
 }

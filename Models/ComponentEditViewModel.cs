@@ -23,5 +23,7 @@ namespace OneJevelsCompany.Web.Models
 
         public string? CurrentImageUrl { get; set; }
         public IFormFile? ImageFile { get; set; }
+
+        [MaxLength(120)] public string? Description { get; set; }
     }
 }

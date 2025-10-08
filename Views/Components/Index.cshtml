@@ -1,0 +1,45 @@
+﻿@model IEnumerable<OneJevelsCompany.Web.Models.Component>
+@{
+    ViewData["Title"] = "Components (Editor)";
+}
+<div class="max-w-6xl mx-auto">
+    <h2 class="text-2xl font-semibold mb-4">Components</h2>
+
+    @if (TempData["ok"] != null)
+    {
+        <div class="mb-3 p-3 rounded bg-green-50 text-green-700">@TempData["ok"]</div>
+    }
+
+    <table class="min-w-full bg-white rounded-xl shadow">
+        <thead>
+            <tr class="text-left border-b">
+                <th class="p-3">Image</th>
+                <th class="p-3">Type</th>
+                <th class="p-3">Name</th>
+                <th class="p-3">Price</th>
+                <th class="p-3">Stock</th>
+                <th class="p-3"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr class="border-b">
+                    <td class="p-3">
+                        @if (!string.IsNullOrWhiteSpace(c.ImageUrl))
+                        {
+                            <img src="@c.ImageUrl" alt="@c.Name" style="width:40px;height:40px;object-fit:cover;border-radius:6px;" />
+                        }
+                    </td>
+                    <td class="p-3">@c.Category?.Name</td>
+                    <td class="p-3">@c.Name</td>
+                    <td class="p-3">@c.Price.ToString("C")</td>
+                    <td class="p-3">@c.QuantityOnHand</td>
+                    <td class="p-3">
+                        <a class="px-3 py-1 rounded bg-amber-600 text-white" href="/Admin/ComponentEditor/Edit/@c.Id">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

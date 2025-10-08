@@ -2,7 +2,7 @@
 using OneJevelsCompany.Web.Data;
 using OneJevelsCompany.Web.Models;
 
-namespace OneJevelsCompany.Web.Services
+namespace OneJevelsCompany.Web.Services.Product
 {
     public class ProductService : IProductService
     {
@@ -22,20 +22,19 @@ namespace OneJevelsCompany.Web.Services
             return await q.OrderBy(j => j.Name).ToListAsync();
         }
 
-        // NOTE: 'type' is kept in the signature to match your existing interface,
-        // but it's unused now that components use dynamic categories.
+        // NOTE: 'type' is in the signature to match your interface;
+        // currently unused. You can filter by 'forCategory' here if needed.
         public async Task<List<Component>> GetComponentsAsync(ComponentType? type = null, JewelCategory? forCategory = null)
         {
             var q = _db.Components
                 .Include(c => c.Category)
                 .AsQueryable();
 
-            // If you later want to filter per jewel category, do it here.
-            // For this MVP we return all components.
+            // Example: if later you want to filter components by target jewel category, do it here.
 
             return await q
-                .OrderBy(c => c.Category!.SortOrder)
-                .ThenBy(c => c.Category!.Name)
+                .OrderBy(c => c.Category == null ? 999 : c.Category.SortOrder)
+                .ThenBy(c => c.Category == null ? "Other" : c.Category.Name)
                 .ThenBy(c => c.Name)
                 .ToListAsync();
         }
@@ -77,5 +76,12 @@ namespace OneJevelsCompany.Web.Services
               .Include(j => j.Components)
                 .ThenInclude(jc => jc.Component)
               .FirstOrDefaultAsync(j => j.Id == id);
+
+        // NEW: required by ShopController for Details/Configure
+        public Task<Component?> GetComponentAsync(int id) =>
+            _db.Components
+               .Include(c => c.Category)
+               // If you later add a related table for dimension options, include it here.
+               .FirstOrDefaultAsync(c => c.Id == id);
     }
 }

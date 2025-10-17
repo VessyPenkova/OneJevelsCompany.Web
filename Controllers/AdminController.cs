@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using OneJevelsCompany.Web.Data;
 using OneJevelsCompany.Web.Models;
 using OneJevelsCompany.Web.Models.Admin;
+using OneJevelsCompany.Web.Services.Dashboard;
 using OneJevelsCompany.Web.Services.Inventory;
 using System.Text.Json;
 
@@ -16,12 +17,15 @@ namespace OneJevelsCompany.Web.Controllers
         private readonly AppDbContext _db;
         private readonly IInventoryService _inventory;
         private readonly IWebHostEnvironment _env;
+        private readonly IDashboardService _dashboard;
 
-        public AdminController(AppDbContext db, IInventoryService inventory, IWebHostEnvironment env)
+        public AdminController(AppDbContext db, IInventoryService inventory, 
+            IWebHostEnvironment env, IDashboardService dashboard)
         {
             _db = db;
             _inventory = inventory;
             _env = env;
+            _dashboard = dashboard; 
         }
 
         public IActionResult Index() => View();
@@ -650,6 +654,13 @@ namespace OneJevelsCompany.Web.Controllers
                 list.Add(new NeedSource { designOrderId = designOrderId, qty = addQty, createdUtc = DateTime.UtcNow });
                 need.SourcesJson = JsonSerializer.Serialize(list);
             }
+        }
+
+        [HttpGet("/Admin/Dashboard")]
+        public async Task<IActionResult> Dashboard()
+        {
+            var vm = await _dashboard.GetAsync();
+            return View("~/Views/Admin/Dashboard.cshtml", vm);
         }
     }
 }

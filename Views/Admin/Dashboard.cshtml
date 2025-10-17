@@ -1,0 +1,114 @@
+﻿@model OneJevelsCompany.Web.Models.Admin.DashboardVm
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="space-y-6">
+    <!-- KPI grid -->
+    <div class="grid md:grid-cols-3 gap-4">
+        @{
+            var kpis = new[]{
+                new { Title="Total Sales",        Val=Model.TotalSales,        Note="+vs last month" },
+                new { Title="Today’s Sales",      Val=Model.TodaysSales,       Note="+since yesterday" },
+                new { Title="Not Initiated",      Val=Model.NotInitiatedValue, Note="pending/unpaid" },
+                new { Title="Delayed Jobs",       Val=Model.DelayedJobsValue,  Note="design orders" },
+                new { Title="Jobs on Hold",       Val=Model.JobsOnHoldValue,   Note="design orders" },
+                };
+        }
+        @foreach (var k in kpis)
+        {
+            <div class="bg-white rounded-2xl shadow p-5">
+                <div class="text-sm text-gray-500">@k.Title</div>
+                <div class="text-3xl font-semibold mt-1">$@k.Val.ToString("N2")</div>
+                <div class="text-xs text-gray-400 mt-1">@k.Note</div>
+            </div>
+        }
+    </div>
+
+    <!-- Customer + Variance -->
+    <div class="grid lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="font-semibold">Jewellery Sales Variance (30 days)</h2>
+            </div>
+            @foreach (var v in Model.Variances)
+            {
+                var pct = v.Forecast == 0 ? 0 : Math.Clamp((int)Math.Round(v.Actual / v.Forecast * 100m), 0, 100);
+                <div class="mb-3">
+                    <div class="flex justify-between text-sm">
+                        <div>@v.Category</div>
+                        <div class="text-gray-500">Variance: @v.Variance.ToString("C")</div>
+                    </div>
+                    <div class="h-2 bg-gray-100 rounded-full">
+                        <div class="h-2 rounded-full bg-amber-500" style="width:@pct%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-400 mt-1">
+                        <span>Forecast @v.Forecast.ToString("C")</span>
+                        <span>Actual @v.Actual.ToString("C")</span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="bg-white rounded-2xl shadow p-5">
+            <h2 class="font-semibold mb-3">Top Customer</h2>
+            @if (Model.Customer is null)
+            {
+                <div class="text-sm text-gray-500">No orders yet.</div>
+            }
+            else
+            {
+                <div class="space-y-2 text-sm">
+                    <div><span class="text-gray-500">Email:</span> @Model.Customer.Email</div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Customer.ShippingAddress))
+                    {
+                        <div><span class="text-gray-500">Address:</span> @Model.Customer.ShippingAddress</div>
+                    }
+                    <div><span class="text-gray-500">Last Order:</span> @Model.Customer.LastOrderOn?.ToString("g")</div>
+                    <div><span class="text-gray-500">Lifetime Value:</span> @Model.Customer.LifetimeValue.ToString("C")</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Milestones -->
+    <div class="grid lg:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl shadow p-5">
+            <h2 class="font-semibold mb-3">Recent Milestones</h2>
+            <ul class="space-y-3 text-sm">
+                @foreach (var m in Model.Milestones.OrderByDescending(x => x.When))
+                {
+                    <li class="flex items-start gap-3">
+                        <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">@m.Tag</span>
+                        <div>
+                            <div class="font-medium">@m.Title</div>
+                            <div class="text-gray-500 text-xs">@m.When.ToString("MMM d, yyyy")</div>
+                        </div>
+                    </li>
+                }
+                @if (!Model.Milestones.Any())
+                {
+                    <li class="text-gray-500">No recent items.</li>
+                }
+            </ul>
+        </div>
+
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow p-5">
+            <h2 class="font-semibold mb-3">Weekly Sales Trend</h2>
+            <canvas id="trendChart" height="80"></canvas>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendLabels));
+        const data   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendSales));
+        new Chart(document.getElementById('trendChart'),{
+          type:'line',
+          data:{ labels, datasets:[{ data, label:'Sales', tension:.35, fill:false }] },
+          options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
+        });
+    </script>
+}

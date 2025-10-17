@@ -10,6 +10,8 @@ using OneJevelsCompany.Web.Services.Inventory;
 using OneJevelsCompany.Web.Services.Orders;
 using OneJevelsCompany.Web.Services.Payment;
 using OneJevelsCompany.Web.Services.Product;
+using OneJevelsCompany.Web.Services.Dashboard;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +54,8 @@ builder.Services.AddScoped<IPaymentService, StripePaymentService>();
 
 // Inventory (only if you added it)
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var app = builder.Build();
 

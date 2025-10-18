@@ -7,12 +7,19 @@ namespace OneJevelsCompany.Web.Services.Cart
     {
         private const string Key = "cart";
 
+        private static readonly JsonSerializerOptions JsonOpts = new()
+        {
+            WriteIndented = false,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
+
         public List<CartItem> GetCart(HttpContext http)
         {
             var json = http.Session.GetString(Key);
             return string.IsNullOrEmpty(json)
                 ? new List<CartItem>()
-                : JsonSerializer.Deserialize<List<CartItem>>(json) ?? new List<CartItem>();
+                : (JsonSerializer.Deserialize<List<CartItem>>(json, JsonOpts) ?? new List<CartItem>());
         }
 
         public void AddToCart(HttpContext http, CartItem item)
@@ -20,7 +27,7 @@ namespace OneJevelsCompany.Web.Services.Cart
             var cart = GetCart(http);
             var existing = cart.FirstOrDefault(i => i.Sku == item.Sku);
             if (existing is null) cart.Add(item);
-            else existing.Quantity += item.Quantity;
+            else existing.Quantity = Math.Max(1, existing.Quantity + item.Quantity);
 
             Save(http, cart);
         }
@@ -48,6 +55,6 @@ namespace OneJevelsCompany.Web.Services.Cart
         public decimal Total(HttpContext http) => GetCart(http).Sum(i => i.LineTotal);
 
         private static void Save(HttpContext http, List<CartItem> cart) =>
-            http.Session.SetString(Key, JsonSerializer.Serialize(cart));
+            http.Session.SetString(Key, JsonSerializer.Serialize(cart, JsonOpts));
     }
 }

@@ -10,8 +10,6 @@ namespace OneJevelsCompany.Web.Services.Product
         Task<string> DescribeComponentsAsync(IEnumerable<int> componentIds);
         Task<List<Design>> GetBestDesignsAsync(JewelCategory? category = null);
         Task<Jewel?> GetJewelAsync(int id);
-
-        // NEW: needed by ShopController -> Details/Configure
         Task<Component?> GetComponentAsync(int id);
     }
 }

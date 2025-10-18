@@ -1,0 +1,101 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+    Layout = null;
+    var user = await UserManager.GetUserAsync(User);
+    string? email = user?.Email ?? "admin";
+    var title = ViewData["Title"]?.ToString() ?? "Admin";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@title — One Jewellery Company</title>
+
+    <!-- Tailwind (CDN) to guarantee classes resolve even if you don't prebuild -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Your site CSS (keeps colors/fonts you already had) -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        /* ensure full-height layout works everywhere */
+        html, body {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<!-- Sticky footer layout: page is a flex column -->
+<body class="min-h-screen flex flex-col bg-[#f9f3e9] text-[#3b3b3b]">
+    <!-- Top bar -->
+    <header class="bg-[#efdfc3] text-[#3b3b3b] shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between">
+            <div class="font-semibold">One Jewellery Company</div>
+
+            <nav class="hidden md:flex items-center gap-6 text-sm">
+                <a class="hover:underline" href="/Admin/Dashboard">Admin</a>
+                <a class="hover:underline" href="/Admin/NewInvoice">New Invoice</a>
+                <a class="hover:underline" href="/Admin/Invoices">Invoices</a>
+                <a class="hover:underline" href="/Admin/Components">Components</a>
+                <a class="hover:underline" href="/Admin/Jewels">Jewels</a>
+            </nav>
+
+            <div class="text-sm">
+                <span class="hidden sm:inline">Hello, @email</span>
+                <a class="ml-4 text-red-600 hover:underline" asp-controller="Account" asp-action="Logout">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content area: sidebar + main -->
+    <div class="flex-1 flex">
+        <!-- Sidebar -->
+        <aside class="w-[260px] shrink-0 border-r bg-white/70">
+            <div class="px-6 py-4 text-sm">
+                <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Management</div>
+                <a href="/Admin/Dashboard" class="block py-1.5 hover:underline">Dashboard</a>
+
+                <div class="mt-5 text-xs uppercase tracking-wide text-gray-500 mb-1">Purchasing</div>
+                <a href="/Admin/NewInvoice" class="block py-1.5 hover:underline">New Invoice</a>
+                <a href="/Admin/Invoices" class="block py-1.5 hover:underline">Invoices</a>
+                <a href="/Admin/PurchaseQueue" class="block py-1.5 hover:underline">Purchase Queue</a>
+
+                <div class="mt-5 text-xs uppercase tracking-wide text-gray-500 mb-1">Catalog</div>
+                <a href="/Admin/Components" class="block py-1.5 hover:underline">Components</a>
+                <a href="/Admin/Components/New" class="block py-1.5 hover:underline">New Item</a>
+                <a href="/Admin/Category" class="block py-1.5 hover:underline">Categories</a>
+                <a href="/Admin/NewCategory" class="block py-1.5 hover:underline">New Category</a>
+                <a href="/Admin/Jewels" class="block py-1.5 hover:underline">Jewels</a>
+
+                <div class="mt-5 text-xs uppercase tracking-wide text-gray-500 mb-1">Design Orders</div>
+                <a href="/Admin/DesignOrders" class="block py-1.5 hover:underline">Pending</a>
+                <a href="/Admin/ReadyDesignOrders" class="block py-1.5 hover:underline">Ready</a>
+            </div>
+        </aside>
+
+        <!-- Main content -->
+        <main class="flex-1">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer (always visible at bottom) -->
+    <footer class="mt-auto bg-[#efdfc3] text-[#3b3b3b]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-center text-sm">
+            © @DateTime.UtcNow.Year One Jewellery Company — Crafted with
+            <!-- gold diamond icon (amber) -->
+            <svg viewBox="0 0 24 24" class="w-4 h-4 mx-1 inline-block text-amber-500" fill="currentColor" aria-hidden="true">
+                <path d="M12 2l4 4 6 1-8 11H10L2 7l6-1 4-4zM5 8l7 9 7-9-3-.5L12 4 8 7.5 5 8z" />
+            </svg>
+            precision
+        </div>
+    </footer>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

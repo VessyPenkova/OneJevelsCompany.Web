@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿// Controllers/AdminController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using OneJevelsCompany.Web.Models;
 using OneJevelsCompany.Web.Models.Admin;
 using OneJevelsCompany.Web.Services.Dashboard;
 using OneJevelsCompany.Web.Services.Inventory;
+using OneJevelsCompany.Web.Services.Common;
 using System.Text.Json;
 
 namespace OneJevelsCompany.Web.Controllers
@@ -16,23 +18,25 @@ namespace OneJevelsCompany.Web.Controllers
     {
         private readonly AppDbContext _db;
         private readonly IInventoryService _inventory;
-        private readonly IWebHostEnvironment _env;
         private readonly IDashboardService _dashboard;
+        private readonly IImageStorage _images;
 
-        public AdminController(AppDbContext db, IInventoryService inventory, 
-            IWebHostEnvironment env, IDashboardService dashboard)
+        public AdminController(
+            AppDbContext db,
+            IInventoryService inventory,
+            IDashboardService dashboard,
+            IImageStorage images)
         {
             _db = db;
             _inventory = inventory;
-            _env = env;
-            _dashboard = dashboard; 
+            _dashboard = dashboard;
+            _images = images;
         }
 
-        public IActionResult Index() => View();
+        // Landing -> Dashboard
+        public IActionResult Index() => RedirectToAction(nameof(Dashboard));
 
-        // =====================================================================
-        // ===================== Catalog lists =================================
-        // =====================================================================
+        // ===== Lists =====
         public async Task<IActionResult> Components()
         {
             var items = await _db.Components
@@ -41,16 +45,12 @@ namespace OneJevelsCompany.Web.Controllers
                 .ThenBy(c => c.Category!.Name)
                 .ThenBy(c => c.Name)
                 .ToListAsync();
-
             return View(items);
         }
 
         public async Task<IActionResult> Jewels()
         {
-            var items = await _db.Jewels
-                .OrderBy(j => j.Name)
-                .ToListAsync();
-
+            var items = await _db.Jewels.OrderBy(j => j.Name).ToListAsync();
             return View(items);
         }
 
@@ -60,13 +60,10 @@ namespace OneJevelsCompany.Web.Controllers
                 .OrderByDescending(i => i.IssuedOnUtc)
                 .Include(i => i.Lines)
                 .ToListAsync();
-
             return View(list);
         }
 
-        // =====================================================================
-        // ========================= Create Invoice ============================
-        // =====================================================================
+        // ===== New Invoice =====
         [HttpGet]
         public async Task<IActionResult> NewInvoice()
         {
@@ -78,7 +75,6 @@ namespace OneJevelsCompany.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> NewInvoice(InvoiceInputModel vm)
         {
-            // Keep only valid lines (must pick item depending on type)
             vm.Lines = vm.Lines
                 .Where(l =>
                        (l.LineType == "Component" && l.ComponentId.HasValue) ||
@@ -115,23 +111,15 @@ namespace OneJevelsCompany.Web.Controllers
             return RedirectToAction(nameof(Invoices));
         }
 
-        // =====================================================================
-        // ========================= Helpers ===================================
-        // =====================================================================
-        private async Task LoadCategoriesAsync()
-        {
-            ViewBag.Categories = await _db.ComponentCategories
-                .OrderBy(c => c.SortOrder).ThenBy(c => c.Name)
-                .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })
-                .ToListAsync();
-        }
-
-        // Populate selects for invoice screen (categories + components + jewels)
+        // ===== Helpers for invoice selects =====
         private async Task FillSelectListsAsync()
         {
-            await LoadCategoriesAsync();
+            ViewBag.Categories = await _db.ComponentCategories
+                .OrderBy(c => c.SortOrder)
+                .ThenBy(c => c.Name)
+                .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })
+                .ToListAsync();
 
-            // Components (pretty label)
             ViewBag.Components = await _db.Components
                 .Include(c => c.Category)
                 .OrderBy(c => c.Category!.SortOrder)
@@ -144,9 +132,9 @@ namespace OneJevelsCompany.Web.Controllers
                 })
                 .ToListAsync();
 
-            // Raw components (id + category id) for client-side filtering
             ViewBag.ComponentsRaw = await _db.Components
-                .OrderBy(c => c.ComponentCategoryId).ThenBy(c => c.Name)
+                .OrderBy(c => c.ComponentCategoryId)
+                .ThenBy(c => c.Name)
                 .Select(c => new
                 {
                     c.Id,
@@ -155,7 +143,6 @@ namespace OneJevelsCompany.Web.Controllers
                 })
                 .ToListAsync();
 
-            // Jewels
             ViewBag.Jewels = await _db.Jewels
                 .OrderBy(j => j.Name)
                 .Select(j => new SelectListItem
@@ -166,68 +153,10 @@ namespace OneJevelsCompany.Web.Controllers
                 .ToListAsync();
         }
 
-        private async Task<string?> SaveImageAsync(IFormFile? file, string folder)
-        {
-            if (file == null || file.Length == 0) return null;
-
-            var root = Path.Combine(_env.WebRootPath, "uploads", folder);
-            Directory.CreateDirectory(root);
-
-            var name = $"{Guid.NewGuid():N}{Path.GetExtension(file.FileName)}";
-            var path = Path.Combine(root, name);
-
-            using (var stream = System.IO.File.Create(path))
-                await file.CopyToAsync(stream);
-
-            return $"/uploads/{folder}/{name}";
-        }
-
-        // ======================================================================
-        // = NEW helper: save base64 PNG data URL to disk and return short path =
-        // ======================================================================
-        private async Task<string?> SaveDataUrlImageAsync(string? dataUrl, string folder)
-        {
-            if (string.IsNullOrWhiteSpace(dataUrl)) return null;
-
-            // If it's already a short path (e.g., /uploads/...), just pass it through.
-            if (!dataUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                return dataUrl;
-
-            // Extract base64 after the first comma
-            var comma = dataUrl.IndexOf(',');
-            if (comma < 0) return null;
-            var base64 = dataUrl[(comma + 1)..];
-
-            byte[] bytes;
-            try
-            {
-                base64 = base64.Replace(' ', '+');
-                bytes = Convert.FromBase64String(base64);
-            }
-            catch
-            {
-                return null;
-            }
-
-            var root = Path.Combine(_env.WebRootPath, "uploads", folder);
-            Directory.CreateDirectory(root);
-
-            var name = $"{Guid.NewGuid():N}.png";
-            var path = Path.Combine(root, name);
-
-            await System.IO.File.WriteAllBytesAsync(path, bytes);
-
-            return $"/uploads/{folder}/{name}";
-        }
-
-        // =====================================================================
-        // ===================== New / Edit Jewel ==============================
-        // =====================================================================
+        // ===== New / Edit Jewel =====
         [HttpGet]
         public IActionResult NewJewel()
-        {
-            return View(new JewelEditViewModel { Category = JewelCategory.Necklace });
-        }
+            => View(new JewelEditViewModel { Category = JewelCategory.Necklace });
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -235,7 +164,7 @@ namespace OneJevelsCompany.Web.Controllers
         {
             if (!ModelState.IsValid) return View(vm);
 
-            var imageUrl = await SaveImageAsync(ImageFile, "jewels");
+            var imageUrl = await _images.SaveAsync(ImageFile, "jewels", HttpContext.RequestAborted);
 
             var j = new Jewel
             {
@@ -245,7 +174,6 @@ namespace OneJevelsCompany.Web.Controllers
                 QuantityOnHand = vm.QuantityOnHand,
                 ImageUrl = imageUrl
             };
-
             _db.Jewels.Add(j);
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Jewels));
@@ -257,7 +185,7 @@ namespace OneJevelsCompany.Web.Controllers
             var j = await _db.Jewels.FindAsync(id);
             if (j == null) return NotFound();
 
-            var vm = new JewelEditViewModel
+            return View(new JewelEditViewModel
             {
                 Id = j.Id,
                 Name = j.Name,
@@ -265,8 +193,7 @@ namespace OneJevelsCompany.Web.Controllers
                 BasePrice = j.BasePrice,
                 QuantityOnHand = j.QuantityOnHand,
                 CurrentImageUrl = j.ImageUrl
-            };
-            return View(vm);
+            });
         }
 
         [HttpPost]
@@ -284,28 +211,22 @@ namespace OneJevelsCompany.Web.Controllers
             j.QuantityOnHand = vm.QuantityOnHand;
 
             if (ImageFile != null)
-                j.ImageUrl = await SaveImageAsync(ImageFile, "jewels");
+                j.ImageUrl = await _images.SaveAsync(ImageFile, "jewels", HttpContext.RequestAborted);
 
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Jewels));
         }
 
-        // =====================================================================
-        // ===================== DESIGN ORDERS LIST ============================
-        // =====================================================================
+        // ===== Design Orders =====
         [HttpGet("/Admin/DesignOrders")]
         public async Task<IActionResult> DesignOrders()
         {
             var orders = await _db.DesignOrders
                 .OrderByDescending(o => o.CreatedUtc)
                 .ToListAsync();
-
             return View("~/Views/Admin/DesignOrders.cshtml", orders);
         }
 
-        // =====================================================================
-        // ===================== READY DESIGN ORDERS LIST ======================
-        // =====================================================================
         [HttpGet("/Admin/ReadyDesignOrders")]
         public async Task<IActionResult> ReadyDesignOrders()
         {
@@ -313,13 +234,9 @@ namespace OneJevelsCompany.Web.Controllers
                 .Where(o => o.Status == "Built")
                 .OrderByDescending(o => o.CreatedUtc)
                 .ToListAsync();
-
             return View("~/Views/Admin/ReadyDesignOrders.cshtml", orders);
         }
 
-        // =====================================================================
-        // ============= DESIGN ORDER DETAILS + BUILD PROTOCOL==================
-        // =====================================================================
         public class DesignOrderDetailsVm
         {
             public DesignOrder Order { get; set; } = null!;
@@ -329,6 +246,9 @@ namespace OneJevelsCompany.Web.Controllers
             public int TotalBeadsPerPiece { get; set; }
             public int TotalBeadsAll { get; set; }
             public decimal MaterialsCostPerJewel { get; set; }
+            public string NewJewelName { get; set; } = "";
+            public decimal? NewJewelPrice { get; set; }
+            public bool CreateJewel { get; set; } = true;
 
             public class Row
             {
@@ -344,10 +264,6 @@ namespace OneJevelsCompany.Web.Controllers
                 public decimal Price { get; set; }
                 public decimal CostPerJewel { get; set; }
             }
-
-            public string NewJewelName { get; set; } = "";
-            public decimal? NewJewelPrice { get; set; }
-            public bool CreateJewel { get; set; } = true;
         }
 
         private sealed class PatternRowDto
@@ -366,26 +282,20 @@ namespace OneJevelsCompany.Web.Controllers
             return Math.Max(1, r);
         }
 
-        // GET /Admin/DesignOrder/{id}
         [HttpGet("/Admin/DesignOrder/{id:int}")]
         public async Task<IActionResult> DesignOrder(int id)
         {
             var o = await _db.DesignOrders.FirstOrDefaultAsync(x => x.Id == id);
             if (o == null) return NotFound();
 
-            // Parse pattern JSON (case-insensitive)
             List<PatternRowDto> rowsDto;
             try
             {
                 rowsDto = JsonSerializer.Deserialize<List<PatternRowDto>>(
                     string.IsNullOrWhiteSpace(o.PatternJson) ? "[]" : o.PatternJson,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-                ) ?? new List<PatternRowDto>();
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<PatternRowDto>();
             }
-            catch
-            {
-                rowsDto = new List<PatternRowDto>();
-            }
+            catch { rowsDto = new List<PatternRowDto>(); }
 
             var ids = rowsDto.Select(r => r.ComponentId).Distinct().ToList();
             var comps = await _db.Components
@@ -409,11 +319,9 @@ namespace OneJevelsCompany.Web.Controllers
             foreach (var r in rowsDto)
             {
                 comps.TryGetValue(r.ComponentId, out var c);
-
                 var oneCycle = Math.Max(0, r.Count);
                 var perPiece = oneCycle * Math.Max(1, repeats);
                 var needed = perPiece * Math.Max(1, o.Quantity);
-
                 var unitPrice = c?.Price ?? 0m;
                 var costPerPiece = unitPrice * perPiece;
 
@@ -443,7 +351,6 @@ namespace OneJevelsCompany.Web.Controllers
             return View("~/Views/Admin/DesignOrderDetails.cshtml", vm);
         }
 
-        // POST /Admin/DesignOrder/{id}/Build
         [HttpPost("/Admin/DesignOrder/{id:int}/Build")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BuildDesignOrder(
@@ -461,8 +368,7 @@ namespace OneJevelsCompany.Web.Controllers
             {
                 rowsDto = JsonSerializer.Deserialize<List<PatternRowDto>>(
                     string.IsNullOrWhiteSpace(o.PatternJson) ? "[]" : o.PatternJson,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-                ) ?? new List<PatternRowDto>();
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<PatternRowDto>();
             }
             catch { rowsDto = new List<PatternRowDto>(); }
 
@@ -479,7 +385,6 @@ namespace OneJevelsCompany.Web.Controllers
             var repeats = CalcRepeats(o.CapacityEstimate, o.OneCycleBeads);
             var qtyToBuild = Math.Max(1, qty);
 
-            // Check stock + enqueue shortages
             var shortages = new List<string>();
             foreach (var r in rows)
             {
@@ -508,7 +413,6 @@ namespace OneJevelsCompany.Web.Controllers
                 return RedirectToAction(nameof(DesignOrder), new { id });
             }
 
-            // Consume stock
             foreach (var r in rows)
             {
                 var need = r.count * repeats * qtyToBuild;
@@ -518,7 +422,7 @@ namespace OneJevelsCompany.Web.Controllers
             Jewel? newJewel = null;
             if (createJewel)
             {
-                var previewPath = await SaveDataUrlImageAsync(o.PreviewDataUrl, folder: "previews");
+                var previewPath = await _images.SaveDataUrlAsync(o.PreviewDataUrl, "previews", HttpContext.RequestAborted);
 
                 newJewel = new Jewel
                 {
@@ -555,9 +459,7 @@ namespace OneJevelsCompany.Web.Controllers
             return RedirectToAction(nameof(DesignOrder), new { id });
         }
 
-        // =====================================================================
-        // =================== RESTOCK / PURCHASE QUEUE ========================
-        // =====================================================================
+        // ===== Purchase Queue =====
         public class PurchaseQueueRowVm
         {
             public int PurchaseNeedId { get; set; }
@@ -635,8 +537,7 @@ namespace OneJevelsCompany.Web.Controllers
                     MinOrderQtyUsed = moqSnapshot,
                     CreatedUtc = DateTime.UtcNow,
                     LastUpdatedUtc = DateTime.UtcNow,
-                    SourcesJson = JsonSerializer.Serialize(new[]
-                    {
+                    SourcesJson = JsonSerializer.Serialize(new[] {
                         new NeedSource{ designOrderId = designOrderId, qty = addQty, createdUtc = DateTime.UtcNow }
                     })
                 };
@@ -656,6 +557,7 @@ namespace OneJevelsCompany.Web.Controllers
             }
         }
 
+        // ===== Dashboard =====
         [HttpGet("/Admin/Dashboard")]
         public async Task<IActionResult> Dashboard()
         {

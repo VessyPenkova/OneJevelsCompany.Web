@@ -7,23 +7,18 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OneJevelsCompany.Web.Controllers
 {
-    // Routes:
+    // Supports BOTH route prefixes:
     //   /Admin/ComponentCategories
-    //   /Admin/ComponentCategories/Create
-    //   /Admin/ComponentCategories/Edit/{id}
-    //   /Admin/ComponentCategories/Delete/{id}
-    //
-    // NEW convenience route in this same controller:
-    //   /Admin/NewCategory  (GET/POST) -> redirect to /Admin/NewInvoice after success
-    [Authorize] // or [Authorize(Roles="Admin")]
+    //   /Admin/Category
+    [Authorize]
     [Route("Admin/ComponentCategories")]
+    [Route("Admin/Category")]
     public class ComponentCategoriesController : Controller
     {
         private readonly AppDbContext _db;
-
         public ComponentCategoriesController(AppDbContext db) => _db = db;
 
-        // ----------------- helpers (internal) -----------------
+        // ----------------- helpers -----------------
         private async Task<int> NextSortAsync()
             => (await _db.ComponentCategories.MaxAsync(x => (int?)x.SortOrder)) ?? 0;
 
@@ -33,16 +28,17 @@ namespace OneJevelsCompany.Web.Controllers
             return _db.ComponentCategories
                 .AnyAsync(x => x.Name == name && (!excludeId.HasValue || x.Id != excludeId.Value));
         }
-        // ------------------------------------------------------
+        // -------------------------------------------
 
         // LIST
+        //   /Admin/ComponentCategories
+        //   /Admin/Category
         [HttpGet("")]
         public async Task<IActionResult> Index()
         {
             var rows = await _db.ComponentCategories
                 .Include(c => c.Components)
-                .OrderBy(c => c.SortOrder)
-                .ThenBy(c => c.Name)
+                .OrderBy(c => c.SortOrder).ThenBy(c => c.Name)
                 .Select(c => new CategoryRowVm
                 {
                     Id = c.Id,
@@ -56,7 +52,11 @@ namespace OneJevelsCompany.Web.Controllers
         }
 
         // CREATE (GET)
+        //   /Admin/ComponentCategories/Create
+        //   /Admin/Category/Create
+        //   /Admin/Category/New        (friendly alias)
         [HttpGet("Create")]
+        [HttpGet("/Admin/Category/New")]
         public async Task<IActionResult> Create()
         {
             var next = await NextSortAsync();
@@ -65,7 +65,11 @@ namespace OneJevelsCompany.Web.Controllers
         }
 
         // CREATE (POST)
+        //   /Admin/ComponentCategories/Create
+        //   /Admin/Category/Create
+        //   /Admin/Category/New        (friendly alias)
         [HttpPost("Create")]
+        [HttpPost("/Admin/Category/New")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CategoryEditVm vm)
         {
@@ -84,11 +88,14 @@ namespace OneJevelsCompany.Web.Controllers
                 SortOrder = vm.SortOrder
             });
             await _db.SaveChangesAsync();
+
             TempData["ok"] = "Category created.";
             return RedirectToAction(nameof(Index));
         }
 
         // EDIT (GET)
+        //   /Admin/ComponentCategories/Edit/{id}
+        //   /Admin/Category/Edit/{id}
         [HttpGet("Edit/{id:int}")]
         public async Task<IActionResult> Edit(int id)
         {
@@ -105,6 +112,8 @@ namespace OneJevelsCompany.Web.Controllers
         }
 
         // EDIT (POST)
+        //   /Admin/ComponentCategories/Edit/{id}
+        //   /Admin/Category/Edit/{id}
         [HttpPost("Edit/{id:int}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, CategoryEditVm vm)
@@ -129,7 +138,9 @@ namespace OneJevelsCompany.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // DELETE (POST) — safe-guard: only if no components
+        // DELETE (POST)
+        //   /Admin/ComponentCategories/Delete/{id}
+        //   /Admin/Category/Delete/{id}
         [HttpPost("Delete/{id:int}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -148,13 +159,13 @@ namespace OneJevelsCompany.Web.Controllers
 
             _db.ComponentCategories.Remove(cat);
             await _db.SaveChangesAsync();
+
             TempData["ok"] = "Category deleted.";
             return RedirectToAction(nameof(Index));
         }
 
-        // ----------------- NEW: /Admin/NewCategory -----------------
-        // Dedicated page that admins can visit from New Invoice.
-        // After creating, redirect back to /Admin/NewInvoice.
+        // -------- Short “New Category” flow used from New Invoice --------
+        //   /Admin/NewCategory  (GET/POST)
         [HttpGet("/Admin/NewCategory")]
         public async Task<IActionResult> NewCategory()
         {
@@ -186,9 +197,9 @@ namespace OneJevelsCompany.Web.Controllers
             TempData["ok"] = $"Category “{vm.Name.Trim()}” created.";
             return Redirect("/Admin/NewInvoice");
         }
-        // -----------------------------------------------------------
+        // ---------------------------------------------------------------
 
-        // View models (scoped to this controller to avoid project-wide changes)
+        // View models
         public class CategoryRowVm
         {
             public int Id { get; set; }

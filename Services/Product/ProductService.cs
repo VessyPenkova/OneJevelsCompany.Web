@@ -22,16 +22,10 @@ namespace OneJevelsCompany.Web.Services.Product
             return await q.OrderBy(j => j.Name).ToListAsync();
         }
 
-        // NOTE: 'type' is in the signature to match your interface;
-        // currently unused. You can filter by 'forCategory' here if needed.
         public async Task<List<Component>> GetComponentsAsync(ComponentType? type = null, JewelCategory? forCategory = null)
         {
-            var q = _db.Components
-                .Include(c => c.Category)
-                .AsQueryable();
-
-            // Example: if later you want to filter components by target jewel category, do it here.
-
+            var q = _db.Components.Include(c => c.Category).AsQueryable();
+            // future place to filter by 'type'/'forCategory'
             return await q
                 .OrderBy(c => c.Category == null ? 999 : c.Category.SortOrder)
                 .ThenBy(c => c.Category == null ? "Other" : c.Category.Name)
@@ -39,25 +33,30 @@ namespace OneJevelsCompany.Web.Services.Product
                 .ToListAsync();
         }
 
+        // Respect multiplicity of ids (no Distinct) so price = sum of each bead used once per id
         public async Task<decimal> CalculateCustomPriceAsync(IEnumerable<int> componentIds)
         {
-            var ids = componentIds.Distinct().ToArray();
-            if (ids.Length == 0) return 0m;
+            var list = componentIds?.ToList() ?? new();
+            if (list.Count == 0) return 0m;
 
-            return await _db.Components
-                .Where(c => ids.Contains(c.Id))
-                .SumAsync(c => c.Price);
+            var counts = list.GroupBy(id => id).ToDictionary(g => g.Key, g => g.Count());
+            var comps = await _db.Components.Where(c => counts.Keys.Contains(c.Id)).ToListAsync();
+
+            decimal total = 0m;
+            foreach (var c in comps)
+                total += c.Price * counts[c.Id];
+
+            return total;
         }
 
         public async Task<string> DescribeComponentsAsync(IEnumerable<int> componentIds)
         {
-            var ids = componentIds.Distinct().ToArray();
+            var ids = (componentIds ?? Array.Empty<int>()).Distinct().ToArray();
             var comps = await _db.Components
                 .Include(c => c.Category)
                 .Where(c => ids.Contains(c.Id))
                 .ToListAsync();
 
-            // e.g. "Clasp: Magnetic, Bead: Pearl 6mm"
             return string.Join(", ",
                 comps.Select(c => $"{(c.Category?.Name ?? "Component")}: {c.Name}"));
         }
@@ -65,9 +64,7 @@ namespace OneJevelsCompany.Web.Services.Product
         public Task<List<Design>> GetBestDesignsAsync(JewelCategory? category = null)
         {
             var q = _db.Designs.AsQueryable();
-            if (category.HasValue)
-                q = q.Where(d => d.Category == category.Value);
-
+            if (category.HasValue) q = q.Where(d => d.Category == category.Value);
             return q.OrderBy(d => d.Name).ToListAsync();
         }
 
@@ -77,11 +74,9 @@ namespace OneJevelsCompany.Web.Services.Product
                 .ThenInclude(jc => jc.Component)
               .FirstOrDefaultAsync(j => j.Id == id);
 
-        // NEW: required by ShopController for Details/Configure
         public Task<Component?> GetComponentAsync(int id) =>
             _db.Components
                .Include(c => c.Category)
-               // If you later add a related table for dimension options, include it here.
                .FirstOrDefaultAsync(c => c.Id == id);
     }
 }

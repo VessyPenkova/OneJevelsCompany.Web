@@ -11,6 +11,7 @@ using OneJevelsCompany.Web.Services.Orders;
 using OneJevelsCompany.Web.Services.Payment;
 using OneJevelsCompany.Web.Services.Product;
 using OneJevelsCompany.Web.Services.Dashboard;
+using OneJevelsCompany.Web.Services.Common;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,9 +20,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-// EF Core — SQL Server
+// EF Core — SQL Server (supports ActiveConnection switch)
+var activeConnKey = builder.Configuration["ActiveConnection"] ?? "DefaultConnection";
+var connectionString = builder.Configuration.GetConnectionString(activeConnKey)
+    ?? throw new InvalidOperationException($"Connection string '{activeConnKey}' not found.");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
+
 
 // Identity (Default UI + Roles)
 builder.Services
@@ -56,6 +62,9 @@ builder.Services.AddScoped<IPaymentService, StripePaymentService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+
+builder.Services.AddScoped<IImageStorage, DiskImageStorage>();
+builder.Services.AddScoped<ICategoryLookup, CategoryLookup>();
 
 var app = builder.Build();
 

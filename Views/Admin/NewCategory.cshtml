@@ -1,13 +1,11 @@
 ﻿@model OneJevelsCompany.Web.Controllers.ComponentCategoriesController.CategoryEditVm
 @{
-    ViewData["Title"] = "New Component Category";
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "New Category";
 }
-
-<form asp-controller="ComponentCategories" asp-action="NewCategory" method="post"
-      class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow space-y-4">
+<form asp-controller="ComponentCategories" asp-action="NewCategory" method="post" class="max-w-md bg-white p-6 rounded-2xl shadow space-y-4">
     @Html.AntiForgeryToken()
-
-    <h2 class="text-xl font-semibold">New Component Category</h2>
+    <h2 class="text-xl font-semibold">New Category</h2>
 
     <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
 
@@ -23,10 +21,8 @@
     </div>
 
     <div class="flex gap-3">
-        <button type="submit" class="px-6 py-3 rounded-lg bg-amber-600 text-white hover:bg-amber-500">
-            Create
-        </button>
-        <a href="/Admin/NewInvoice" class="px-6 py-3 rounded-lg border">Cancel</a>
+        <button type="submit" class="px-6 py-3 rounded-lg bg-amber-600 text-white hover:bg-amber-500">Create</button>
+        <a asp-controller="Admin" asp-action="NewInvoice" class="px-6 py-3 rounded-lg border">Cancel</a>
     </div>
 </form>
 

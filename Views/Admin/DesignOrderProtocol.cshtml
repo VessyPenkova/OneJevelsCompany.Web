@@ -1,0 +1,191 @@
+﻿@model OneJevelsCompany.Web.Controllers.AdminController.DesignOrderDetailsVm
+@{
+    Layout = null; // printer-friendly
+    var o = Model.Order;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Build Protocol #@o.Id</title>
+    <style>
+        html, body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            color: #1f2937;
+        }
+
+        .page {
+            max-width: 960px;
+            margin: 24px auto;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 8px;
+        }
+
+        h2 {
+            font-size: 16px;
+            margin: 18px 0 6px;
+        }
+
+        .meta {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background: #fafafa;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 11px;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 2px 6px;
+            border-radius: 6px;
+            border: 1px solid #fcd34d;
+        }
+
+        .footer {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+
+        {
+            display: none !important;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        .page {
+            margin: 0;
+        }
+
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .btn {
+            border: 1px solid #d1d5db;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="topbar noprint">
+            <div><a href="/Admin/DesignOrder/@o.Id" class="btn">Back</a></div>
+            <div><button class="btn" onclick="window.print()">Print</button></div>
+        </div>
+
+        <h1>Build Protocol — Order #@o.Id <span class="badge">@o.Status</span></h1>
+        <div class="meta">
+            Created: @o.CreatedUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ·
+            Customer: @(string.IsNullOrWhiteSpace(o.CustomerName) ? "(n/a)" : o.CustomerName) ·
+            Qty: <b>@o.Quantity</b> ·
+            Category: <b>@o.Category</b> ·
+            Repeats (per piece): <b>@Model.RepeatsPerPiece</b>
+        </div>
+
+        <h2>Materials per piece</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:34px">#</th>
+                    <th>Component</th>
+                    <th class="right">Beads/Cycle</th>
+                    <th class="right">Beads/Piece</th>
+                    <th class="right">Unit Price</th>
+                    <th class="right">Cost/Piece</th>
+                    <th class="right">Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var i = 0;
+                    foreach (var r in Model.Rows)
+                    {
+                        <tr>
+                            <td>@(++i)</td>
+                            <td><b>@r.Name</b> <span class="muted">(@(r.Mm > 0 ? $"{r.Mm} mm" : "—"))</span></td>
+                            <td class="right">@r.CountOneCycle</td>
+                            <td class="right">@r.PerPieceCount</td>
+                            <td class="right">@r.Price.ToString("C")</td>
+                            <td class="right">@r.CostPerJewel.ToString("C")</td>
+                            <td class="right">@r.Stock</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" class="right">Totals (per piece):</th>
+                    <th class="right">@Model.TotalBeadsPerPiece</th>
+                    <th></th>
+                    <th class="right">@Model.MaterialsCostPerJewel.ToString("C")</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+
+        <h2>For @o.Quantity piece(s)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th class="right">Needed</th>
+                    <th class="right">In Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Rows)
+                {
+                    <tr>
+                        <td>@r.Name</td>
+                        <td class="right">@r.NeededTotal</td>
+                        <td class="right">@r.Stock</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="footer">Printed on @DateTime.Now.ToString("yyyy-MM-dd HH:mm")</div>
+    </div>
+</body>
+</html>

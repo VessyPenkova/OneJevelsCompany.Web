@@ -1,12 +1,14 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using OneJevelsCompany.Models;
+using OneJevelsCompany.Web.Routing;
 
 namespace OneJevelsCompany.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index() => View();     // Home
-        public IActionResult About() => View();     // About Us
+        [HttpGet("/", Name = RouteNames.Home.Index)]
+        public IActionResult Index() => View();
+
+        [HttpGet("/About", Name = RouteNames.Home.About)]
+        public IActionResult About() => View();
     }
 }

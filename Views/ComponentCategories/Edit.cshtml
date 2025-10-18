@@ -1,14 +1,11 @@
 ﻿@model OneJevelsCompany.Web.Controllers.ComponentCategoriesController.CategoryEditVm
 @{
+    Layout = "_AdminLayout";
     ViewData["Title"] = "Edit Component Category";
 }
-
-<form asp-controller="ComponentCategories" asp-action="Edit" asp-route-id="@Model.Id" method="post"
-      class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow space-y-4">
+<form asp-controller="ComponentCategories" asp-action="Edit" asp-route-id="@Model.Id" method="post" class="max-w-md bg-white p-6 rounded-2xl shadow space-y-4">
     @Html.AntiForgeryToken()
-
-    <h2 class="text-xl font-semibold">Edit Category</h2>
-
+    <h2 class="text-xl font-semibold">Edit Component Category</h2>
     <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
 
     <div>
@@ -16,7 +13,6 @@
         <input asp-for="Name" class="w-full border rounded p-2" />
         <span asp-validation-for="Name" class="text-red-600 text-sm"></span>
     </div>
-
     <div>
         <label class="block text-sm font-medium mb-1">Sort order</label>
         <input asp-for="SortOrder" type="number" class="w-full border rounded p-2" />
@@ -24,7 +20,7 @@
 
     <div class="flex gap-3">
         <button type="submit" class="px-6 py-3 rounded-lg bg-amber-600 text-white hover:bg-amber-500">Save</button>
-        <a href="/Admin/ComponentCategories" class="px-6 py-3 rounded-lg border">Cancel</a>
+        <a asp-controller="ComponentCategories" asp-action="Index" class="px-6 py-3 rounded-lg border">Cancel</a>
     </div>
 </form>
 

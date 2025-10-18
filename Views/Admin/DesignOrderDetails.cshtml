@@ -1,8 +1,8 @@
 ﻿@model OneJevelsCompany.Web.Controllers.AdminController.DesignOrderDetailsVm
 @{
+    Layout = "_AdminLayout";
     ViewData["Title"] = $"Order #{Model.Order.Id}";
 }
-
 <div class="max-w-6xl mx-auto space-y-6">
 
     <div class="flex items-center justify-between">
@@ -26,7 +26,6 @@
     }
 
     <div class="grid md:grid-cols-3 gap-6">
-        <!-- Left side: order + components -->
         <div class="md:col-span-2 bg-white p-4 rounded-2xl shadow">
             <div class="grid sm:grid-cols-2 gap-4">
                 <div>
@@ -93,7 +92,6 @@
             </table>
         </div>
 
-        <!-- Right side: create jewel -->
         <div class="bg-white p-4 rounded-2xl shadow">
             <h3 class="font-semibold">Create ready Jewel</h3>
             <form asp-controller="Admin" asp-action="BuildDesignOrder" asp-route-id="@Model.Order.Id" method="post">
@@ -131,14 +129,12 @@
         (function () {
           const qtyInput = document.querySelector('input[name="qty"]');
           const submitBtn = document.querySelector('button[type="submit"]');
-
           if (!qtyInput || !submitBtn) return;
 
-          // Build a list of {name, perPiece, stock} from the table
           const rows = [...document.querySelectorAll('table tbody tr.border-t')].map(tr => {
             const name = tr.querySelector('.font-medium')?.textContent?.trim() || 'Component';
-            const perPiece = parseInt(tr.querySelector('td:nth-child(4)')?.textContent?.trim() || '0', 10); // "Per piece" col
-            const stock = parseInt(tr.querySelector('td:nth-child(5)')?.textContent?.trim() || '0', 10);    // "Stock" col
+            const perPiece = parseInt(tr.querySelector('td:nth-child(4)')?.textContent?.trim() || '0', 10);
+            const stock = parseInt(tr.querySelector('td:nth-child(5)')?.textContent?.trim() || '0', 10);
             return { tr, name, perPiece, stock };
           }).filter(r => r.perPiece > 0);
 
@@ -151,26 +147,24 @@
           function check() {
             const q = Math.max(1, parseInt(qtyInput.value || '1', 10));
             const shortages = [];
-
             rows.forEach(r => {
               const need = r.perPiece * q;
               const ok = r.stock >= need;
-              r.tr.style.backgroundColor = ok ? '' : 'rgba(254,226,226,.6)'; // light red if shortage
+              r.tr.style.backgroundColor = ok ? '' : 'rgba(254,226,226,.6)';
               if (!ok) shortages.push(`${r.name}: need ${need}, have ${r.stock}`);
             });
 
             if (shortages.length) {
               warn.textContent = 'Not enough stock: ' + shortages.join(' • ');
               warn.style.display = '';
-              submitBtn.disabled = false; // set to true if you want to disable the button
+              submitBtn.disabled = false;
             } else {
               warn.style.display = 'none';
               submitBtn.disabled = false;
             }
           }
-
           qtyInput.addEventListener('input', check);
-          check(); // initial
+          check();
         })();
     </script>
 }

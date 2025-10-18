@@ -27,7 +27,8 @@ namespace OneJevelsCompany.Web.Services.Orders
                     Category = i.Category,
                     Quantity = i.Quantity,
                     UnitPrice = i.UnitPrice,
-                    ComponentsSummary = i.ComponentsSummary
+                    ComponentsSummary = i.ComponentsSummary,
+                    // keep compatibility – ReadyJewelId/CollectionId/ComponentIdsCsv are on CartItem only
                 });
             }
 
@@ -42,6 +43,7 @@ namespace OneJevelsCompany.Web.Services.Orders
         {
             var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
             if (order is null) return;
+
             order.Status = "Paid";
             order.PaymentProviderId = providerPaymentId;
             await _db.SaveChangesAsync();

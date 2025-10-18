@@ -14,20 +14,16 @@ namespace OneJevelsCompany.Web.Services.Dashboard
         {
             var today = DateTime.UtcNow.Date;
 
-            // ----- KPIs from Orders -----
             var paid = db.Orders.Where(o => o.Status == "Paid");
             var totalSales = await paid.SumAsync(o => (decimal?)o.Total) ?? 0m;
             var todaysSales = await paid.Where(o => o.CreatedUtc.Date == today)
-                                        .SumAsync(o => (decimal?)o.Total) ?? 0m;
+                                         .SumAsync(o => (decimal?)o.Total) ?? 0m;
             var notInitiated = await db.Orders.Where(o => o.Status != "Paid")
                                               .SumAsync(o => (decimal?)o.Total) ?? 0m;
 
-            // ----- From DesignOrders (if table exists/status used) -----
             decimal delayedVal = 0m, onHoldVal = 0m;
             try
             {
-                // We don't know exact value fields; use UnitPriceEstimate * Quantity if present.
-                // If fields don’t exist, both stay 0 (safe fallback).
                 delayedVal = await db.DesignOrders
                     .Where(d => d.Status == "Delayed")
                     .SumAsync(d => (decimal?)((d.UnitPriceEstimate ?? 0m) * Math.Max(1, d.Quantity))) ?? 0m;
@@ -36,9 +32,8 @@ namespace OneJevelsCompany.Web.Services.Dashboard
                     .Where(d => d.Status == "OnHold")
                     .SumAsync(d => (decimal?)((d.UnitPriceEstimate ?? 0m) * Math.Max(1, d.Quantity))) ?? 0m;
             }
-            catch { /* safe no-op if columns differ */ }
+            catch { /* schema differences tolerated */ }
 
-            // ----- Variance by category (last 30 days) -----
             var since = today.AddDays(-30);
             var items = from oi in db.OrderItems
                         join o in db.Orders on oi.OrderId equals o.Id
@@ -49,7 +44,6 @@ namespace OneJevelsCompany.Web.Services.Dashboard
                                      .Select(g => new { Category = g.Key, Actual = g.Sum(x => x.Amount) })
                                      .ToListAsync();
 
-            // Simple forecast constants (tune later or pull from a table)
             var forecast = new Dictionary<JewelCategory, decimal>
             {
                 { JewelCategory.Bracelet, 12000m },
@@ -66,7 +60,6 @@ namespace OneJevelsCompany.Web.Services.Dashboard
                 .OrderBy(v => v.Category)
                 .ToList();
 
-            // ----- Top customer via email -----
             var top = await db.Orders
                 .GroupBy(o => new { o.CustomerEmail, o.ShippingAddress })
                 .Select(g => new {
@@ -86,7 +79,6 @@ namespace OneJevelsCompany.Web.Services.Dashboard
                 LifetimeValue = top.Ltv
             };
 
-            // ----- 12-week trend (paid totals) -----
             var start = today.AddDays(-7 * 11);
             var trendRaw = await db.Orders
                 .Where(o => o.Status == "Paid" && o.CreatedUtc >= start)
@@ -102,7 +94,6 @@ namespace OneJevelsCompany.Web.Services.Dashboard
                 .Select(i => trendRaw.FirstOrDefault(t => t.Week == i)?.Total ?? 0m)
                 .ToList();
 
-            // ----- Milestones from DesignOrders (recent) -----
             var milestones = new List<MilestoneVm>();
             try
             {
@@ -119,7 +110,7 @@ namespace OneJevelsCompany.Web.Services.Dashboard
                     When = r.CreatedUtc
                 }).ToList();
             }
-            catch { /* ok if schema differs */ }
+            catch { }
 
             return new DashboardVm
             {

@@ -1,46 +1,42 @@
 ﻿@model IEnumerable<OneJevelsCompany.Web.Models.Component>
 @{
+    Layout = "_AdminLayout";
     ViewData["Title"] = "Components";
 }
+@if (TempData["ok"] != null)
+{
+    <div class="mb-3 p-3 rounded bg-green-50 text-green-700">@TempData["ok"]</div>
+}
 
-<div class="max-w-6xl mx-auto">
-    <h2 class="text-2xl font-semibold mb-4">Components</h2>
+<div class="mb-4">
+    <a class="px-3 py-2 rounded bg-amber-600 text-white hover:bg-amber-500" asp-controller="Admin" asp-action="ReceiveViaInvoice">
+        Receive via Invoice
+    </a>
+    <a class="ml-2 px-3 py-2 rounded border" asp-controller="Components" asp-action="New">New Item</a>
+</div>
 
-    @if (TempData["ok"] != null)
-    {
-        <div class="mb-3 p-3 rounded bg-green-50 text-green-700">@TempData["ok"]</div>
-    }
-
-    <div class="mb-4">
-        <a class="px-3 py-2 rounded bg-amber-600 text-white hover:bg-amber-500" href="/Admin/ReceiveViaInvoice">
-            Receive via Invoice
-        </a>
-    </div>
-
-    <table class="min-w-full bg-white rounded-xl shadow">
-        <thead>
-            <tr class="text-left border-b">
+<div class="bg-white rounded-2xl shadow overflow-hidden">
+    <table class="min-w-full text-left">
+        <thead class="bg-gray-50">
+            <tr>
                 <th class="p-3">Type</th>
                 <th class="p-3">Name</th>
                 <th class="p-3">Price</th>
                 <th class="p-3">Stock</th>
-                <th class="p-3"></th> <!-- Actions -->
+                <th class="p-3"></th>
             </tr>
         </thead>
         <tbody>
             @foreach (var c in Model)
             {
-                <tr class="border-b">
+                <tr class="border-t">
                     <td class="p-3">@c.Category?.Name</td>
                     <td class="p-3">@c.Name</td>
                     <td class="p-3">@c.Price.ToString("C")</td>
                     <td class="p-3">@c.QuantityOnHand</td>
                     <td class="p-3">
-                        <!-- The Edit link you need -->
-                        <a class="btn btn-sm" 
-                        asp-controller="Components"
-                        asp-action="Edit" 
-                        asp-route-id="@c.Id">Edit</a>
+                        <a class="text-amber-700 hover:underline"
+                           asp-controller="Components" asp-action="Edit" asp-route-id="@c.Id">Edit</a>
                     </td>
                 </tr>
             }

@@ -1,4 +1,13 @@
+
+
 /* ===== Champagne theme (maps Tailwind amber-* to champagne) ===== */
+/* wwwroot/css/site.css */
+html, body {
+    height: 100%;
+}
+
+
+
 :root {
     --ch-50: #FFFBF5;
     --ch-100: #F9F2E7;
@@ -241,3 +250,6 @@ body {
 .to-amber-400 {
     --tw-gradient-to: var(--ch-400) var(--tw-gradient-to-position) !important;
 }
+
+
+

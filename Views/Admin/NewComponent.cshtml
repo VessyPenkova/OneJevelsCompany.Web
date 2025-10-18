@@ -1,16 +1,13 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Rendering
 @model OneJevelsCompany.Web.Controllers.ComponentsController.AdminNewComponentVm
 @{
+    Layout = "_AdminLayout";
     ViewData["Title"] = "New Item";
     var categories = ViewBag.Categories as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
 }
-
-<form asp-controller="Components" asp-action="New" method="post" enctype="multipart/form-data"
-      class="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow space-y-6">
+<form asp-controller="Components" asp-action="New" method="post" enctype="multipart/form-data" class="max-w-3xl bg-white p-6 rounded-2xl shadow space-y-6">
     @Html.AntiForgeryToken()
-
     <h2 class="text-xl font-semibold">New Item</h2>
-
     <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -61,7 +58,7 @@
 
     <div class="flex gap-3">
         <button type="submit" class="px-6 py-3 rounded-lg bg-amber-600 text-white hover:bg-amber-500">Create</button>
-        <a href="/Admin/NewInvoice" class="px-6 py-3 rounded-lg border">Cancel</a>
+        <a asp-controller="Admin" asp-action="Components" class="px-6 py-3 rounded-lg border">Cancel</a>
     </div>
 
     <p class="text-xs text-gray-500 mt-2">

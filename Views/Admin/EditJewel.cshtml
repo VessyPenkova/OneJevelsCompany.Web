@@ -1,13 +1,10 @@
 ﻿@model OneJevelsCompany.Web.Models.Admin.JewelEditViewModel
 @using OneJevelsCompany.Web.Models
 @{
+    Layout = "_AdminLayout";
     ViewData["Title"] = "Edit Jewel";
 }
-
-<h1 class="text-xl font-semibold mb-4">Edit Jewel</h1>
-
-<form asp-action="EditJewel" method="post" enctype="multipart/form-data"
-      class="max-w-xl bg-white p-5 rounded shadow space-y-4">
+<form asp-action="EditJewel" method="post" enctype="multipart/form-data" class="max-w-xl bg-white p-5 rounded-2xl shadow space-y-4">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
 
@@ -48,3 +45,7 @@
         <a asp-action="Jewels" class="px-4 py-2 border rounded">Cancel</a>
     </div>
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

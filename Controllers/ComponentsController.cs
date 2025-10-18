@@ -111,7 +111,9 @@ namespace OneJevelsCompany.Web.Controllers
             await _db.SaveChangesAsync();
 
             TempData["ok"] = $"Item “{comp.Name}” created.";
-            return RedirectToRoute(RouteNames.Admin.NewInvoice);
+
+            // ✅ robust redirect (no route-name dependency)
+            return RedirectToAction("NewInvoice", "Admin");
         }
 
         // ===================== Edit =====================
@@ -135,7 +137,8 @@ namespace OneJevelsCompany.Web.Controllers
                 Description = c.Description
             };
 
-            return View("~/Views/Components/Edit.cshtml", vm);
+            // match your actual file path
+            return View("~/Views/Admin/Components/EditComponent.cshtml", vm);
         }
 
         [HttpPost("Edit/{id:int}")]
@@ -144,8 +147,12 @@ namespace OneJevelsCompany.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                vm.CurrentImageUrl = await _db.Components.Where(x => x.Id == id).Select(x => x.ImageUrl).FirstOrDefaultAsync();
-                return View("~/Views/Components/Edit.cshtml", vm);
+                vm.CurrentImageUrl = await _db.Components
+                    .Where(x => x.Id == id)
+                    .Select(x => x.ImageUrl)
+                    .FirstOrDefaultAsync();
+
+                return View("~/Views/Admin/Components/EditComponent.cshtml", vm);
             }
 
             var c = await _db.Components.FirstOrDefaultAsync(x => x.Id == id);
@@ -172,7 +179,9 @@ namespace OneJevelsCompany.Web.Controllers
 
             await _db.SaveChangesAsync();
             TempData["ok"] = "Component saved.";
-            return RedirectToRoute(RouteNames.Admin.ComponentsList);
+
+            // ✅ robust redirect (no route-name dependency)
+            return RedirectToAction("Components", "Admin");
         }
 
         // ======= VMs (unchanged)

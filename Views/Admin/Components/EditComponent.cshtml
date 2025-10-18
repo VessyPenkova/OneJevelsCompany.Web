@@ -3,14 +3,23 @@
     Layout = "_AdminLayout";
     ViewData["Title"] = "Edit Component";
 }
-<form asp-action="Edit" method="post" enctype="multipart/form-data" class="max-w-xl bg-white p-5 rounded-2xl shadow space-y-4">
+
+<form asp-controller="Components"
+      asp-action="Edit"
+      asp-route-id="@Model.Id"
+      method="post"
+      enctype="multipart/form-data"
+      class="max-w-xl bg-white p-5 rounded-2xl shadow space-y-4">
     @Html.AntiForgeryToken()
+
     <input type="hidden" asp-for="Id" />
+
     <div>
         <label class="block mb-1">Name</label>
         <input asp-for="Name" class="w-full border rounded p-2" />
         <span asp-validation-for="Name" class="text-red-600 text-sm"></span>
     </div>
+
     <div class="grid grid-cols-2 gap-4">
         <div>
             <label class="block mb-1">Price</label>
@@ -21,6 +30,7 @@
             <input asp-for="QuantityOnHand" type="number" class="w-full border rounded p-2" />
         </div>
     </div>
+
     <div class="grid grid-cols-2 gap-4">
         <div>
             <label class="block mb-1">SKU</label>
@@ -31,6 +41,7 @@
             <input asp-for="Color" class="w-full border rounded p-2" />
         </div>
     </div>
+
     <div class="grid grid-cols-2 gap-4">
         <div>
             <label class="block mb-1">Size label</label>

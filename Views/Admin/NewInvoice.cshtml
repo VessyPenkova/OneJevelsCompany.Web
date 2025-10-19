@@ -1,174 +1,373 @@
 ﻿@model OneJevelsCompany.Web.Models.Admin.InvoiceInputModel
-@using Microsoft.AspNetCore.Mvc.Rendering
 @{
     Layout = "_AdminLayout";
     ViewData["Title"] = "New Invoice";
-
-    var categories = ViewBag.Categories as List<SelectListItem> ?? new();
-    var jewels = ViewBag.Jewels as List<SelectListItem> ?? new();
-    var compsRaw = (IEnumerable<dynamic>)(ViewBag.ComponentsRaw ?? new List<dynamic>());
-
-    var catsOptionsHtml = string.Join("", categories.Select(cat => $"<option value='{cat.Value}'>{cat.Text}</option>"));
-    var compsOptionsHtml = string.Join("", compsRaw.Select(c => $"<option value='{c.Id}' data-cat='{c.ComponentCategoryId}'>{c.Text}</option>"));
-    var jewelsOptionsHtml = string.Join("", jewels.Select(j => $"<option value='{j.Value}'>{j.Text}</option>"));
 }
 
-<form asp-action="NewInvoice" method="post" class="bg-white p-6 rounded-2xl shadow max-w-5xl">
-    @Html.AntiForgeryToken()
-
-    <div class="grid md:grid-cols-3 gap-4 mb-4">
-        <div>
-            <label class="block text-sm mb-1">Number</label>
-            <input asp-for="Number" class="border rounded w-full p-2" />
-        </div>
-        <div>
-            <label class="block text-sm mb-1">Supplier</label>
-            <input asp-for="SupplierName" class="border rounded w-full p-2" />
-        </div>
-        <div>
-            <label class="block text-sm mb-1">Date (UTC)</label>
-            <input asp-for="IssuedOnUtc" type="datetime-local" class="border rounded w-full p-2"
-                   value="@Model.IssuedOnUtc.ToString("yyyy-MM-ddTHH:mm")" />
-        </div>
+<div class="max-w-6xl mx-auto p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">New Invoice</h2>
+        <a asp-action="Invoices" class="text-gray-600 hover:text-gray-800">← Back to Invoices</a>
     </div>
 
-    <div class="rounded-2xl overflow-hidden border">
-        <table class="w-full table-auto">
-            <thead class="bg-amber-50">
-                <tr>
-                    <th class="p-2 text-left">Type</th>
-                    <th class="p-2 text-left">Category</th>
-                    <th class="p-2 text-left">Item</th>
-                    <th class="p-2 text-left">Qty</th>
-                    <th class="p-2 text-left">Unit Cost</th>
-                    <th class="p-2 text-left">Note</th>
-                    <th class="p-2"></th>
-                </tr>
-            </thead>
-            <tbody id="linesBody">
-                @for (int i = 0; i < Model.Lines.Count; i++)
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            <ul>
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                 {
-                    <tr class="border-t" data-index="@i">
-                        <td class="p-2">
-                            <select asp-for="Lines[@i].LineType" class="border rounded p-2 line-type">
-                                <option>Component</option>
-                                <option>Jewel</option>
-                            </select>
-                        </td>
-                        <td class="p-2">
-                            <select class="border rounded p-2 sel-comp-cat">
-                                <option value="">-- all categories --</option>
-                                @Html.Raw(catsOptionsHtml)
-                            </select>
-                        </td>
-                        <td class="p-2">
-                            <select asp-for="Lines[@i].ComponentId" class="border rounded p-2 sel-component">
-                                <option value="">-- select component --</option>
-                                @Html.Raw(compsOptionsHtml)
-                            </select>
-                            <select asp-for="Lines[@i].JewelId" class="border rounded p-2 sel-jewel hidden">
-                                <option value="">-- select jewel --</option>
-                                @Html.Raw(jewelsOptionsHtml)
-                            </select>
-                        </td>
-                        <td class="p-2 w-24"><input asp-for="Lines[@i].Quantity" class="border rounded p-2 w-24" /></td>
-                        <td class="p-2 w-32"><input asp-for="Lines[@i].UnitCost" class="border rounded p-2 w-32" /></td>
-                        <td class="p-2"><input asp-for="Lines[@i].Note" class="border rounded p-2 w-full" /></td>
-                        <td class="p-2"><button type="button" class="text-red-600 hover:underline btn-remove">Remove</button></td>
-                    </tr>
+                    <li>@error.ErrorMessage</li>
                 }
-            </tbody>
-        </table>
-    </div>
+            </ul>
+        </div>
+    }
 
-    <div class="mt-4 flex gap-3">
-        <button type="button" id="btnAddLine" class="px-4 py-2 rounded border">Add Line</button>
-        <button type="submit" class="px-4 py-2 rounded bg-amber-600 text-white">Save Invoice</button>
-        <a asp-controller="Admin" asp-action="Invoices" class="px-4 py-2 rounded border">Cancel</a>
-    </div>
-</form>
+    <form asp-action="NewInvoice" method="post" class="bg-white rounded-lg shadow-md p-6">
+        @Html.AntiForgeryToken()
+
+        <!-- Invoice Header -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 pb-6 border-b">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Number</label>
+                <input asp-for="Number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                       placeholder="INV-001" required />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Supplier Name</label>
+                <input asp-for="SupplierName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                       placeholder="Supplier name" required />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Issue Date</label>
+                <input asp-for="IssuedOnUtc" type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                       value="@DateTime.UtcNow.ToString("yyyy-MM-dd")" required />
+            </div>
+        </div>
+
+        <!-- Line Items -->
+        <div class="mb-4">
+            <h3 class="text-lg font-semibold mb-3">Line Items</h3>
+            <div id="linesContainer">
+                <!-- Initial line -->
+                <div class="line-row bg-gray-50 p-4 rounded-lg mb-3" data-index="0">
+                    <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                            <select name="Lines[0].LineType" class="line-type w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500">
+                                <option value="Component" selected>Component</option>
+                                <option value="Jewel">Jewel</option>
+                            </select>
+                        </div>
+
+                        <div class="category-cell">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                            <select class="category-select w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500">
+                                <option value="">-- Select Category --</option>
+                                @if (ViewBag.Categories != null)
+                                {
+                                    foreach (var cat in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Categories)
+                                    {
+                                        <option value="@cat.Value">@cat.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Item</label>
+                            <select class="item-select w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500">
+                                <option value="">-- Select Item --</option>
+                            </select>
+                            <input type="hidden" name="Lines[0].ComponentId" class="component-id" />
+                            <input type="hidden" name="Lines[0].JewelId" class="jewel-id" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
+                            <input name="Lines[0].Quantity" type="number" min="1" value="1"
+                                   class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500" required />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Unit Cost</label>
+                            <input name="Lines[0].UnitCost" type="number" min="0" step="0.01" value="0"
+                                   class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500" required />
+                        </div>
+
+                        <div class="flex items-end">
+                            <button type="button" class="remove-line px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onclick="removeLine(0)" disabled>
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Note (optional)</label>
+                        <input name="Lines[0].Note" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500"
+                               placeholder="Additional notes..." />
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" onclick="addLine()" class="mt-3 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                + Add Another Line
+            </button>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-3 pt-4 border-t">
+            <button type="submit" class="px-6 py-3 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700">
+                Save Invoice
+            </button>
+            <a asp-action="Invoices" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     <script>
-        (function () {
-            function updateRowMode(tr) {
-                const typeSel = tr.querySelector('.line-type');
-                const catSel  = tr.querySelector('.sel-comp-cat');
-                const compSel = tr.querySelector('.sel-component');
-                const jewelSel= tr.querySelector('.sel-jewel');
-                const isComponent = typeSel.value === 'Component';
+        // ==================== DATA INITIALIZATION ====================
+        let componentsRaw = [];
+        let jewelsRaw = [];
+        let lineCounter = 1;
 
-                if (isComponent) {
-                    catSel.classList.remove('hidden');
-                    compSel.classList.remove('hidden');
-                    jewelSel.classList.add('hidden');
-                    jewelSel.value = '';
-                    filterByCat(tr);
+                (function initializeData() {
+            try {
+                @if (ViewBag.ComponentsRaw != null)
+                {
+                        <text>
+                        componentsRaw = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ComponentsRaw));
+
+                        // NORMALIZE property names (handle both PascalCase and camelCase)
+                        componentsRaw = componentsRaw.map(c => ({
+                            id: c.id || c.Id,
+                            componentCategoryId: c.componentCategoryId || c.ComponentCategoryId,
+                            text: c.text || c.Text
+                        }));
+
+                        console.log('✅ Components loaded:', componentsRaw.length);
+                        if (componentsRaw.length > 0) {
+                            console.log('📋 Sample component:', componentsRaw[0]);
+                            const categoryGroups = componentsRaw.reduce((acc, c) => {
+                                const catId = c.componentCategoryId;
+                                if (!acc[catId]) acc[catId] = 0;
+                                acc[catId]++;
+                                return acc;
+                            }, {});
+                            console.log('📊 Components by category ID:', categoryGroups);
+                        }
+                        </text>
+                }
+
+                @if (ViewBag.Jewels != null)
+                {
+                        var jewelsData = ((IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Jewels)
+                                .Select(j => new { id = int.Parse(j.Value), text = j.Text });
+                        <text>
+                        jewelsRaw = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(jewelsData));
+                        console.log('✅ Jewels loaded:', jewelsRaw.length);
+                        </text>
+                }
+            } catch (e) {
+                console.error('❌ Error loading data:', e);
+                console.error('Error details:', e.message);
+                alert('Error loading invoice data: ' + e.message + '. Please check console and refresh.');
+            }
+        })();
+
+        // ==================== LINE MANAGEMENT ====================
+        function setupLineEvents(row) {
+            const typeSelect = row.querySelector('.line-type');
+            const categorySelect = row.querySelector('.category-select');
+            const itemSelect = row.querySelector('.item-select');
+            const componentIdInput = row.querySelector('.component-id');
+            const jewelIdInput = row.querySelector('.jewel-id');
+            const categoryCell = row.querySelector('.category-cell');
+
+            function updateItems() {
+                const lineType = typeSelect.value;
+                itemSelect.innerHTML = '<option value="">-- Select Item --</option>';
+
+                if (lineType === 'Component') {
+                    categoryCell.style.display = 'block';
+
+                    const categoryId = parseInt(categorySelect.value);
+                    if (!categoryId) return;
+
+                    const filtered = componentsRaw.filter(c => c.componentCategoryId === categoryId);
+
+                    console.log(`🔍 Category ${categoryId}: Found ${filtered.length} components`);
+
+                    if (filtered.length === 0) {
+                        const opt = document.createElement('option');
+                        opt.value = '';
+                        opt.textContent = '-- No items in this category --';
+                        opt.disabled = true;
+                        itemSelect.appendChild(opt);
+
+                        // Show helpful message
+                        console.warn(`⚠️ No components for category ${categoryId}. Available categories:`,
+                            [...new Set(componentsRaw.map(c => c.componentCategoryId))]);
+                        return;
+                    }
+
+                    filtered.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = item.text;
+                        itemSelect.appendChild(option);
+                    });
+
                 } else {
-                    catSel.classList.add('hidden');
-                    compSel.classList.add('hidden');
-                    compSel.value = '';
-                    jewelSel.classList.remove('hidden');
+                    // Jewels - hide category
+                    categoryCell.style.display = 'none';
+
+                    if (jewelsRaw.length === 0) {
+                        const opt = document.createElement('option');
+                        opt.value = '';
+                        opt.textContent = '-- No jewels available --';
+                        opt.disabled = true;
+                        itemSelect.appendChild(opt);
+                        return;
+                    }
+
+                    jewelsRaw.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = item.text;
+                        itemSelect.appendChild(option);
+                    });
+                }
+
+                syncHiddenIds();
+            }
+
+            function syncHiddenIds() {
+                const lineType = typeSelect.value;
+                const selectedId = itemSelect.value;
+
+                if (lineType === 'Component') {
+                    componentIdInput.value = selectedId;
+                    jewelIdInput.value = '';
+                } else {
+                    componentIdInput.value = '';
+                    jewelIdInput.value = selectedId;
                 }
             }
-            function filterByCat(tr) {
-                const catSel  = tr.querySelector('.sel-comp-cat');
-                const compSel = tr.querySelector('.sel-component');
-                if (!catSel || !compSel) return;
-                const cat = catSel.value;
-                Array.from(compSel.options).forEach(opt => {
-                    if (!opt.value) return;
-                    const ok = !cat || opt.getAttribute('data-cat') === cat;
-                    opt.hidden = !ok;
+
+            typeSelect.addEventListener('change', updateItems);
+            categorySelect.addEventListener('change', updateItems);
+            itemSelect.addEventListener('change', syncHiddenIds);
+
+            // Initial load
+            updateItems();
+        }
+
+        function addLine() {
+            const container = document.getElementById('linesContainer');
+            const firstRow = container.querySelector('.line-row');
+            const newRow = firstRow.cloneNode(true);
+
+            newRow.dataset.index = lineCounter;
+
+            // Update all name attributes
+            newRow.querySelectorAll('[name]').forEach(input => {
+                const name = input.getAttribute('name');
+                input.setAttribute('name', name.replace(/\[\d+\]/, `[${lineCounter}]`));
+
+                // Reset values
+                if (input.type === 'number') {
+                    input.value = input.name.includes('Quantity') ? '1' : '0';
+                } else if (input.type !== 'hidden' && input.tagName !== 'SELECT') {
+                    input.value = '';
+                }
+            });
+
+            // Reset selects
+            newRow.querySelector('.line-type').value = 'Component';
+            newRow.querySelector('.category-select').selectedIndex = 0;
+            newRow.querySelector('.item-select').innerHTML = '<option value="">-- Select Item --</option>';
+            newRow.querySelector('.component-id').value = '';
+            newRow.querySelector('.jewel-id').value = '';
+
+            // Update remove button
+            const removeBtn = newRow.querySelector('.remove-line');
+            removeBtn.disabled = false;
+            removeBtn.setAttribute('onclick', `removeLine(${lineCounter})`);
+
+            container.appendChild(newRow);
+            setupLineEvents(newRow);
+
+            console.log('➕ Added line', lineCounter);
+            lineCounter++;
+        }
+
+        function removeLine(index) {
+            const rows = document.querySelectorAll('.line-row');
+            if (rows.length > 1) {
+                const row = document.querySelector(`.line-row[data-index="${index}"]`);
+                if (row) {
+                    row.remove();
+                    console.log('➖ Removed line', index);
+                    reindexLines();
+                }
+            } else {
+                alert('Cannot remove the last line. At least one line is required.');
+            }
+        }
+
+        function reindexLines() {
+            const rows = document.querySelectorAll('.line-row');
+            rows.forEach((row, idx) => {
+                row.dataset.index = idx;
+
+                row.querySelectorAll('[name]').forEach(input => {
+                    const name = input.getAttribute('name');
+                    input.setAttribute('name', name.replace(/\[\d+\]/, `[${idx}]`));
                 });
-                if (compSel.selectedOptions.length && compSel.selectedOptions[0].hidden) compSel.value = "";
+
+                const removeBtn = row.querySelector('.remove-line');
+                removeBtn.disabled = (rows.length === 1);
+                removeBtn.setAttribute('onclick', `removeLine(${idx})`);
+            });
+        }
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Invoice page initialized');
+
+            const firstRow = document.querySelector('.line-row');
+            if (firstRow) {
+                setupLineEvents(firstRow);
+            } else {
+                console.error('❌ First line row not found');
             }
 
-            document.querySelectorAll('#linesBody tr').forEach(tr => { updateRowMode(tr); filterByCat(tr); });
+            // Validation helper
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const lines = document.querySelectorAll('.line-row');
+                    let hasValidLine = false;
 
-            document.getElementById('linesBody').addEventListener('change', (e) => {
-                if (e.target.classList.contains('line-type')) updateRowMode(e.target.closest('tr'));
-                if (e.target.classList.contains('sel-comp-cat')) filterByCat(e.target.closest('tr'));
-            });
+                    lines.forEach(row => {
+                        const componentId = row.querySelector('.component-id').value;
+                        const jewelId = row.querySelector('.jewel-id').value;
+                        if (componentId || jewelId) {
+                            hasValidLine = true;
+                        }
+                    });
 
-            document.getElementById('linesBody').addEventListener('click', (e) => {
-                if (e.target.classList.contains('btn-remove')) e.target.closest('tr').remove();
-            });
-
-            document.getElementById('btnAddLine').addEventListener('click', () => {
-                const body = document.getElementById('linesBody');
-                const idx = body.querySelectorAll('tr').length;
-                const template = `
-        <tr class="border-t" data-index="${idx}">
-          <td class="p-2">
-            <select name="Lines[${idx}].LineType" class="border rounded p-2 line-type"><option>Component</option><option>Jewel</option></select>
-          </td>
-          <td class="p-2">
-            <select class="border rounded p-2 sel-comp-cat">
-              <option value="">-- all categories --</option>
-              @Html.Raw(catsOptionsHtml)
-            </select>
-          </td>
-          <td class="p-2">
-            <select name="Lines[${idx}].ComponentId" class="border rounded p-2 sel-component">
-              <option value="">-- select component --</option>
-              @Html.Raw(compsOptionsHtml)
-            </select>
-            <select name="Lines[${idx}].JewelId" class="border rounded p-2 sel-jewel hidden">
-              <option value="">-- select jewel --</option>
-              @Html.Raw(jewelsOptionsHtml)
-            </select>
-          </td>
-          <td class="p-2 w-24"><input name="Lines[${idx}].Quantity" value="1" class="border rounded p-2 w-24"/></td>
-          <td class="p-2 w-32"><input name="Lines[${idx}].UnitCost" value="0" class="border rounded p-2 w-32"/></td>
-          <td class="p-2"><input name="Lines[${idx}].Note" class="border rounded p-2 w-full"/></td>
-          <td class="p-2"><button type="button" class="text-red-600 hover:underline btn-remove">Remove</button></td>
-        </tr>`;
-                body.insertAdjacentHTML('beforeend', template);
-                const newRow = body.lastElementChild;
-                updateRowMode(newRow);
-                filterByCat(newRow);
-            });
-        })();
+                    if (!hasValidLine) {
+                        e.preventDefault();
+                        alert('Please select at least one item (Component or Jewel) before saving.');
+                        return false;
+                    }
+                });
+            }
+        });
     </script>
 }

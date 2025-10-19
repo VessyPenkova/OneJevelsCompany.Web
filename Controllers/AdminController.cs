@@ -33,6 +33,55 @@ namespace OneJevelsCompany.Web.Controllers
             _images = images;
         }
 
+        // ====================== NESTED VMs (used by several views) ======================
+        // DO NOT RENAME: Views compile against OneJevelsCompany.Web.Controllers.AdminController.<Type>
+
+        public class DesignOrderDetailsVm
+        {
+            public DesignOrder Order { get; set; } = null!;
+            public int Repeats { get; set; }
+            public int RepeatsPerPiece { get; set; }
+            public List<Row> Rows { get; set; } = new();
+            public int TotalBeadsPerPiece { get; set; }
+            public int TotalBeadsAll { get; set; }
+            public decimal MaterialsCostPerJewel { get; set; }
+            public string NewJewelName { get; set; } = "";
+            public decimal? NewJewelPrice { get; set; }
+            public bool CreateJewel { get; set; } = true;
+
+            public class Row
+            {
+                public int ComponentId { get; set; }
+                public string Name { get; set; } = "";
+                public string? ImageUrl { get; set; }
+                public int Mm { get; set; }
+                public int CountOneCycle { get; set; }
+                public int PerPieceCount { get; set; }
+                public int CountPerJewel { get; set; }
+                public int NeededTotal { get; set; }
+                public int Stock { get; set; }
+                public decimal Price { get; set; }
+                public decimal CostPerJewel { get; set; }
+            }
+        }
+
+        public class PurchaseQueueRowVm
+        {
+            public int PurchaseNeedId { get; set; }
+            public int ComponentId { get; set; }
+            public string Name { get; set; } = "";
+            public string? Sku { get; set; }
+            public string? Dimensions { get; set; }
+            public string? SizeLabel { get; set; }
+            public string? ImageUrl { get; set; }
+            public int Stock { get; set; }
+            public decimal Price { get; set; }
+            public int NeededQty { get; set; }
+            public int MinOrderQty { get; set; }
+            public int SuggestedQty { get; set; }
+            public DateTime LastUpdatedUtc { get; set; }
+        }
+
         // Landing -> Dashboard
         public IActionResult Index() => RedirectToAction(nameof(Dashboard));
 
@@ -102,7 +151,6 @@ namespace OneJevelsCompany.Web.Controllers
                     JewelId = l.LineType == "Jewel" ? l.JewelId : null,
                     Quantity = l.Quantity,
                     UnitCost = l.UnitCost,
-                    Note = l.Note
                 }).ToList()
             };
 
@@ -237,35 +285,6 @@ namespace OneJevelsCompany.Web.Controllers
             return View("~/Views/Admin/ReadyDesignOrders.cshtml", orders);
         }
 
-        public class DesignOrderDetailsVm
-        {
-            public DesignOrder Order { get; set; } = null!;
-            public int Repeats { get; set; }
-            public int RepeatsPerPiece { get; set; }
-            public List<Row> Rows { get; set; } = new();
-            public int TotalBeadsPerPiece { get; set; }
-            public int TotalBeadsAll { get; set; }
-            public decimal MaterialsCostPerJewel { get; set; }
-            public string NewJewelName { get; set; } = "";
-            public decimal? NewJewelPrice { get; set; }
-            public bool CreateJewel { get; set; } = true;
-
-            public class Row
-            {
-                public int ComponentId { get; set; }
-                public string Name { get; set; } = "";
-                public string? ImageUrl { get; set; }
-                public int Mm { get; set; }
-                public int CountOneCycle { get; set; }
-                public int PerPieceCount { get; set; }
-                public int CountPerJewel { get; set; }
-                public int NeededTotal { get; set; }
-                public int Stock { get; set; }
-                public decimal Price { get; set; }
-                public decimal CostPerJewel { get; set; }
-            }
-        }
-
         private sealed class PatternRowDto
         {
             public int ComponentId { get; set; }
@@ -285,8 +304,24 @@ namespace OneJevelsCompany.Web.Controllers
         [HttpGet("/Admin/DesignOrder/{id:int}")]
         public async Task<IActionResult> DesignOrder(int id)
         {
+            var vm = await BuildDesignOrderVmAsync(id);
+            if (vm == null) return NotFound();
+            return View("~/Views/Admin/DesignOrderDetails.cshtml", vm);
+        }
+
+        // Printer-friendly page used by the “Print protocol” button
+        [HttpGet("/Admin/DesignOrder/{id:int}/Protocol")]
+        public async Task<IActionResult> DesignOrderProtocol(int id)
+        {
+            var vm = await BuildDesignOrderVmAsync(id);
+            if (vm == null) return NotFound();
+            return View("~/Views/Admin/DesignOrderProtocol.cshtml", vm);
+        }
+
+        private async Task<DesignOrderDetailsVm?> BuildDesignOrderVmAsync(int id)
+        {
             var o = await _db.DesignOrders.FirstOrDefaultAsync(x => x.Id == id);
-            if (o == null) return NotFound();
+            if (o == null) return null;
 
             List<PatternRowDto> rowsDto;
             try
@@ -348,7 +383,7 @@ namespace OneJevelsCompany.Web.Controllers
             vm.TotalBeadsPerPiece = totalBeadsPerPiece;
             vm.TotalBeadsAll = totalBeadsPerPiece * Math.Max(1, o.Quantity);
 
-            return View("~/Views/Admin/DesignOrderDetails.cshtml", vm);
+            return vm;
         }
 
         [HttpPost("/Admin/DesignOrder/{id:int}/Build")]
@@ -460,23 +495,6 @@ namespace OneJevelsCompany.Web.Controllers
         }
 
         // ===== Purchase Queue =====
-        public class PurchaseQueueRowVm
-        {
-            public int PurchaseNeedId { get; set; }
-            public int ComponentId { get; set; }
-            public string Name { get; set; } = "";
-            public string? Sku { get; set; }
-            public string? Dimensions { get; set; }
-            public string? SizeLabel { get; set; }
-            public string? ImageUrl { get; set; }
-            public int Stock { get; set; }
-            public decimal Price { get; set; }
-            public int NeededQty { get; set; }
-            public int MinOrderQty { get; set; }
-            public int SuggestedQty { get; set; }
-            public DateTime LastUpdatedUtc { get; set; }
-        }
-
         [HttpGet("/Admin/PurchaseQueue")]
         public async Task<IActionResult> PurchaseQueue()
         {

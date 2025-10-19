@@ -1,3 +1,4 @@
+
 # 💎 One Jewellery Company – Custom Jewellery Design & Inventory Management
 
 A modern ASP.NET Core MVC web application designed for a jewellery business.  
@@ -7,14 +8,14 @@ The platform allows customers to create their own jewellery designs and helps ad
 
 ### 🛍 Customer Side
 - **Custom Jewellery Designer:**  
-  Users can design their own bracelets by selecting materials, bead types, and arrangement patterns.  
-  A real-time **3D preview** lets customers visualize their final product before ordering.
+  - Users can design their own bracelets by selecting materials, bead types, and arrangement patterns.  
+  - A real-time **3D preview** lets customers visualize their final product before ordering.
 
 - **Order Form:**  
-  Simple and intuitive order form to send custom designs directly to the admin team.
+  - Simple and intuitive order form to send custom designs directly to the admin team.
 
 - **Order Confirmation:**  
-  Customers receive a reference number upon submitting their design.
+  - Customers receive a reference number upon submitting their design.
 
 ### 🧾 Admin Side
 - **Inventory Management:**  
@@ -30,24 +31,46 @@ The platform allows customers to create their own jewellery designs and helps ad
   - Organized list of existing and custom designs.  
   - Easy navigation and edit options.
 
-## 🛠️ Tech Stack
-- **Frontend:** Razor Pages / HTML5, CSS3, Bootstrap  
-- **Backend:** ASP.NET Core MVC  
-- **Database:** SQL Server (EF Core ORM)  
-- **Tools:** Visual Studio, Entity Framework Core, Identity for Authentication
+## **🛠️ Tech Stack**
+ - Frontend: Razor Pages / HTML5, CSS3, Bootstrap  
+ - Backend: ASP.NET Core MVC  
+ - Database: SQL Server (EF Core ORM)  
+ - Tools: Visual Studio, Entity Framework Core, Identity for Authentication
 
 ## 🧑‍💻 Roles
 - **Customer:**  
-  Can design and submit custom jewellery orders.
+  - Can design and submit custom jewellery orders.
   
 - **Admin:**  
-  Can manage jewellery items, components, and supplier invoices.
+  - Can manage jewellery items, components, and supplier invoices.
 
 ## 🚀 Future Enhancements
-- Payment integration for online checkout  
-- Advanced order tracking system  
-- Automatic pricing calculation based on components  
-- Role-based dashboards with analytics
+- **📦 Stock Management Enhancements**
+  - Add item dimensions and minimum quantities for bracelet/necklace production.
+  - Base pricing by length.
+  - 3D visualization of shelf location for stored items.
+
+- **🪡 Bracelet / Necklace Designer Enhancements**
+  - Add 3D visualization of bracelets in three positions.
+  - Visualize stringing material and clasps.
+  - Preview alternative clasp types directly in the designer.
+
+- **📝 Documentation & PDF Export**
+  - Printable PDF protocols for work orders.
+  - Auto-generated invoices based on protocol data.
+
+- **💰 Invoice & Pricing**
+  - Auto-calculate markup.
+  - Detailed element cost tracking.
+
+- **🏢 Company & Order Management**
+  - Add company database (name, VAT, address, orders).
+  - Link orders to company records.
+  - History of all purchases and designs.
+
+- **📊 Reporting & Dashboards**
+  - Real-time statistics panel.
+  - Daily / weekly / monthly reports.
 
 ## 📸 Screenshots
 

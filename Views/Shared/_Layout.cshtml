@@ -1,22 +1,38 @@
 ﻿@* Views/Shared/_Layout.cshtml *@
+@{
+    // Reliable controller/area detection
+    var controller = (ViewContext.RouteData.Values["controller"]?.ToString() ?? "").ToLowerInvariant();
+    var area = (ViewContext.RouteData.Values["area"]?.ToString() ?? "").ToLowerInvariant();
+    var isAdmin = User.IsInRole("Admin");
+
+    // Show admin shell (sidebar) for Admin controller pages and the Inventory controller.
+    bool useAdminShell = isAdmin && (controller == "admin" || controller == "inventory" || area == "admin");
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - One Jewellery Company</title>
-    <!-- Tailwind (CDN) to guarantee classes resolve even if you don't prebuild -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="~/css/champagne-theme.css" asp-append-version="true" />
 
+    <!-- Tailwind (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Theme + site CSS -->
+    <link rel="stylesheet" href="~/css/champagne-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="bg-gray-100 font-sans text-gray-800">
+
+<body class="bg-gray-100 font-sans text-gray-800 min-h-screen flex flex-col">
+    <!-- Top nav -->
     <nav class="bg-white shadow-md px-4 py-3">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <a asp-controller="Home" asp-action="Index" class="text-2xl font-bold text-amber-600">One Jewellery Company</a>
+            <a asp-controller="Home" asp-action="Index" class="text-2xl font-bold text-amber-600">
+                One Jewellery Company
+            </a>
 
             <div class="hidden md:flex items-center gap-5">
-                @* When logged-in user is Admin, show back-office links only *@
                 @if (User.IsInRole("Admin"))
                 {
                     <a asp-controller="Admin" asp-action="Index" class="font-semibold hover:text-amber-600">Admin</a>
@@ -24,6 +40,7 @@
                     <a asp-controller="Admin" asp-action="Invoices" class="hover:text-amber-600">Invoices</a>
                     <a asp-controller="Admin" asp-action="Components" class="hover:text-amber-600">Components</a>
                     <a asp-controller="Admin" asp-action="Jewels" class="hover:text-amber-600">Jewels</a>
+                    <a href="/Inventory" class="hover:text-amber-600">Inventory</a>
                 }
                 else
                 {
@@ -35,7 +52,6 @@
                     <a asp-controller="Cart" asp-action="Cart" class="hover:text-amber-600">Cart</a>
                 }
 
-                @* Auth block *@
                 @if (User?.Identity?.IsAuthenticated == true)
                 {
                     <span class="text-gray-500">Hello, @User.Identity!.Name</span>
@@ -56,9 +72,53 @@
         </div>
     </nav>
 
-    <main class="container mx-auto mt-8 px-4">
-        @RenderBody()
-    </main>
+    @if (useAdminShell)
+    {
+        <!-- Admin shell: sticky sidebar + main -->
+        <div class="flex-1 flex min-h-[calc(100vh-4rem)]">
+            <!-- 4rem ≈ navbar height -->
+            <!-- Sidebar -->
+            <aside class="w-[260px] shrink-0 border-r bg-white/80 sticky top-0 h-[calc(100vh-4rem)] overflow-y-auto">
+                <div class="px-6 py-4 text-sm">
+                    <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Management</div>
+                    <a href="/Admin/Dashboard" class="block py-1.5 hover:underline">Dashboard</a>
+
+                    <div class="mt-5 text-xs uppercase tracking-wide text-gray-500 mb-1">Purchasing</div>
+                    <a href="/Admin/NewInvoice" class="block py-1.5 hover:underline">New Invoice</a>
+                    <a href="/Admin/Invoices" class="block py-1.5 hover:underline">Invoices</a>
+                    <a href="/Admin/PurchaseQueue" class="block py-1.5 hover:underline">Purchase Queue</a>
+
+                    <div class="mt-5 text-xs uppercase tracking-wide text-gray-500 mb-1">Catalog</div>
+                    <a href="/Admin/Components" class="block py-1.5 hover:underline">Components</a>
+                    <a href="/Admin/Components/New" class="block py-1.5 hover:underline">New Item</a>
+                    <a href="/Admin/Category" class="block py-1.5 hover:underline">Categories</a>
+                    <a href="/Admin/NewCategory" class="block py-1.5 hover:underline">New Category</a>
+                    <a href="/Admin/Jewels" class="block py-1.5 hover:underline">Jewels</a>
+
+                    <!-- Inventory link styled like Jewels -->
+                    <a href="/Admin/Inventory" class="block py-1.5 hover:underline">Inventory</a>
+
+                    <div class="mt-5 text-xs uppercase tracking-wide text-gray-500 mb-1">Design Orders</div>
+                    <a href="/Admin/DesignOrders" class="block py-1.5 hover:underline">Pending</a>
+                    <a href="/Admin/ReadyDesignOrders" class="block py-1.5 hover:underline">Ready</a>
+                </div>
+            </aside>
+
+            <!-- Main content (horizontal scroll for wide tables) -->
+            <main class="flex-1 overflow-x-auto">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    @RenderBody()
+                </div>
+            </main>
+        </div>
+    }
+    else
+    {
+        <!-- Public shell -->
+        <main class="container mx-auto mt-8 px-4 flex-1">
+            @RenderBody()
+        </main>
+    }
 
     <footer class="mt-12 text-center text-sm text-gray-500 border-t py-4">
         &copy; @DateTime.Now.Year One Jewellery Company — Crafted with 💎 precision

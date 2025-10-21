@@ -1,0 +1,162 @@
+﻿@model IEnumerable<OneJevelsCompany.Web.Models.InventoryItemVm>
+@inject Microsoft.Extensions.Options.IOptions<OneJevelsCompany.Web.Models.ProductionLengthsOptions> Opts
+
+@{
+    ViewData["Title"] = "Inventory (Наличност)";
+    var braceletLen = Opts.Value.BraceletLengthCm;
+    var necklaceLen = Opts.Value.NecklaceLengthCm;
+}
+
+<style>
+    .xl-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.08);
+        padding: 14px;
+    }
+
+    .xl-legend {
+        font-size: .9rem;
+        margin-bottom: 10px;
+        color: #555;
+    }
+
+    .xl-wrap {
+        max-height: 68vh;
+        overflow: auto;
+        border: 1px solid #e9e9e9;
+        border-radius: 10px;
+    }
+
+    table.xl {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-family: ui-monospace,Menlo,Consolas,"Courier New",monospace;
+    }
+
+    .xl thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #f6f6f6;
+        border: 1px solid #e3e3e3;
+        border-bottom: 2px solid #d8d8d8;
+        text-align: left;
+        padding: .55rem .6rem;
+        font-weight: 600;
+        font-size: .9rem;
+    }
+
+    .xl tbody td {
+        border: 1px solid #e3e3e3;
+        padding: .45rem .55rem;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .xl tbody tr:nth-child(even) {
+        background: #fafafa;
+    }
+
+    .num {
+        text-align: right;
+    }
+
+    .img-cell img {
+        width: 56px;
+        height: 56px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #e3e3e3;
+        background: #fff;
+    }
+
+    .btn-mini {
+        padding: .25rem .5rem;
+        border: 1px solid #d8d8d8;
+        border-radius: 6px;
+        text-decoration: none;
+    }
+
+    .btn-row a + a {
+        margin-left: .35rem;
+    }
+
+    .chip {
+        display: inline-block;
+        background: #fff7e6;
+        color: #8a5a00;
+        border: 1px solid #ffe1a6;
+        padding: .15rem .4rem;
+        border-radius: 999px;
+        font-size: .8rem;
+    }
+
+    .muted {
+        color: #9aa0a6;
+    }
+</style>
+
+<div class="xl-card">
+    <h2 style="margin:0 0 .4rem 0;">Inventory (Наличност)</h2>
+    <div class="xl-legend">
+        <span class="chip">Bracelet: @braceletLen cm</span> |
+        <span class="chip">Necklace: @necklaceLen cm</span>
+        <span class="muted" style="float:right">Base Price = Min Qty × Unit Price</span>
+    </div>
+
+    <div class="xl-wrap">
+        <table class="xl">
+            <thead>
+                <tr>
+                    <th style="min-width:90px">Photo</th>
+                    <th style="min-width:100px">Type</th>
+                    <th style="min-width:230px">Name</th>
+                    <th class="num" style="min-width:100px">In Stock</th>
+                    <th class="num" style="min-width:110px">Unit Price</th>
+                    <th class="num" style="min-width:140px">Size — Length (mm)</th>
+                    <th class="num" style="min-width:140px">Size — Width (mm)</th>
+                    <th class="num" style="min-width:150px">Min Qty (Bracelet)</th>
+                    <th class="num" style="min-width:170px">Base Price (Bracelet)</th>
+                    <th class="num" style="min-width:150px">Min Qty (Necklace)</th>
+                    <th class="num" style="min-width:170px">Base Price (Necklace)</th>
+                    <th style="min-width:180px">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    var controller = r.Type == OneJevelsCompany.Web.Models.InventoryType.Jewel ? "Jewels" : "Components";
+                    <tr>
+                        <td class="img-cell">
+                            @if (!string.IsNullOrWhiteSpace(r.ImageUrl))
+                            {
+                                <img src="@r.ImageUrl" alt="@r.Name" />
+                            }
+                            else
+                            {
+                                <div style="width:56px;height:56px;border:1px dashed #ccc;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#999;">no img</div>
+                            }
+                        </td>
+                        <td>@r.TypeDisplay</td>
+                        <td>@r.Name</td>
+                        <td class="num">@r.QuantityOnHand</td>
+                        <td class="num">@r.UnitPrice.ToString("C")</td>
+                        <td class="num">@(r.SizeLengthMm?.ToString("0.##") ?? "—")</td>
+                        <td class="num">@(r.SizeWidthMm?.ToString("0.##") ?? "—")</td>
+                        <td class="num">@(r.MinQtyBracelet?.ToString() ?? "—")</td>
+                        <td class="num">@(r.BasePriceBracelet?.ToString("C") ?? "—")</td>
+                        <td class="num">@(r.MinQtyNecklace?.ToString() ?? "—")</td>
+                        <td class="num">@(r.BasePriceNecklace?.ToString("C") ?? "—")</td>
+                        <td class="btn-row">
+                            <a class="btn-mini" asp-controller="@controller" asp-action="Details" asp-route-id="@r.Id">View</a>
+                            <a class="btn-mini" asp-controller="@controller" asp-action="Edit" asp-route-id="@r.Id">Edit</a>
+                            <a class="btn-mini" asp-controller="@controller" asp-action="Delete" asp-route-id="@r.Id">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

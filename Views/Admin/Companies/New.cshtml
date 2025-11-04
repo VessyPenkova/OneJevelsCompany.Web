@@ -1,0 +1,44 @@
+﻿@model OneJevelsCompany.Web.Models.Company
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "New Company";
+}
+<h1 class="text-xl font-semibold mb-4">New Company</h1>
+
+<form method="post" class="bg-white rounded-2xl shadow p-6 max-w-2xl">
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm">Name</label>
+            <input asp-for="Name" class="border rounded px-2 py-1 w-full" />
+            <span asp-validation-for="Name" class="text-red-600 text-sm"></span>
+        </div>
+        <div>
+            <label class="block text-sm">VAT</label>
+            <input asp-for="VatNumber" class="border rounded px-2 py-1 w-full" />
+        </div>
+        <div>
+            <label class="block text-sm">Bulstat</label>
+            <input asp-for="Bulstat" class="border rounded px-2 py-1 w-full" />
+        </div>
+        <div>
+            <label class="block text-sm">Contact</label>
+            <input asp-for="ContactPerson" class="border rounded px-2 py-1 w-full" />
+        </div>
+        <div class="col-span-2">
+            <label class="block text-sm">Address</label>
+            <input asp-for="Address" class="border rounded px-2 py-1 w-full" />
+        </div>
+        <div>
+            <label class="block text-sm">Phone</label>
+            <input asp-for="Phone" class="border rounded px-2 py-1 w-full" />
+        </div>
+        <div>
+            <label class="block text-sm">Email</label>
+            <input asp-for="Email" class="border rounded px-2 py-1 w-full" />
+        </div>
+    </div>
+
+    <div class="mt-4 text-right">
+        <button class="px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-500">Save</button>
+    </div>
+</form>

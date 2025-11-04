@@ -22,7 +22,8 @@ namespace OneJevelsCompany.Web.Models
         public decimal LengthCm { get; set; } // e.g. 18
         public int BeadMm { get; set; }       // e.g. 8
 
-        [MaxLength(16)] public string Mode { get; set; } = "circle"; // "line" | "circle"
+        [MaxLength(16)]
+        public string Mode { get; set; } = "circle"; // "line" | "circle"
         public int Tilt { get; set; } = 65;
         public int Rotate { get; set; } = -10;
 
@@ -35,20 +36,30 @@ namespace OneJevelsCompany.Web.Models
         public int CapacityEstimate { get; set; }
         public int PreviewBeads { get; set; }
 
-        // Optional price
+        // Optional price (materials cost / guide price per finished piece)
         public decimal? UnitPriceEstimate { get; set; }
 
-        // Workflow state
+        // Workflow state: Pending / Built / Sold / etc.
         [MaxLength(24)]
-        public string Status { get; set; } = "Pending"; // Pending/Confirmed/Built/etc.
+        public string Status { get; set; } = "Pending";
 
         // PNG screenshot captured from the canvas (data URL).
-        // nvarchar(max) so larger images are safe in SQL Server.
         [Column(TypeName = "nvarchar(max)")]
         public string? PreviewDataUrl { get; set; }
 
         // Optional extras
         [MaxLength(120)] public string? DesignName { get; set; }
         [MaxLength(4000)] public string? AdminNotes { get; set; }
+
+        // -------------------- Sales tracking (NEW) --------------------
+        // when a sales invoice is issued from this built order
+        public int? SalesInvoiceId { get; set; }
+        public SalesInvoice? SalesInvoice { get; set; }   // nav
+
+        // how many finished pieces were sold from this order (usually 1+)
+        public int? SoldQty { get; set; }
+
+        // when it was sold
+        public DateTime? SoldOnUtc { get; set; }
     }
 }

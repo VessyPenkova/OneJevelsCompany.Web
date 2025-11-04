@@ -125,3 +125,23 @@ namespace OneJevelsCompany.Web.Controllers
         }
     }
 }
+
+//A “Sales” block in the admin sidebar (under “Purchasing”) with:
+
+//New Sale(optional shortcut)
+
+//Sales Invoices(filtered list)
+
+//On the Build Protocol page: a Create Sales Invoice button.
+
+//Pops a dialog asking for profit % (e.g., 40%).
+
+//Calculates: Unit Price = MaterialsCostPerPiece × (1 + %/100).
+
+//Creates an Invoice marked as a Sale with buyer/seller info.
+
+//Decrements Jewel.QuantityOnHand by the sold quantity.
+
+//Links the invoice back to the DesignOrder.
+
+//A printable Invoice view.

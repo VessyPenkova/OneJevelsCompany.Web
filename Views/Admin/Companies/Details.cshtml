@@ -1,0 +1,48 @@
+﻿@model OneJevelsCompany.Web.Models.Company
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = Model.Name;
+}
+<h1 class="text-xl font-semibold mb-2">@Model.Name</h1>
+<div class="text-gray-600 mb-6">
+    <div>VAT: @Model.VatNumber</div>
+    <div>Bulstat: @Model.Bulstat</div>
+    <div>Contact: @Model.ContactPerson</div>
+    <div>Address: @Model.Address</div>
+    <div>Phone: @Model.Phone</div>
+    <div>Email: @Model.Email</div>
+</div>
+
+<h2 class="text-lg font-semibold mb-2">Orders (Sales Invoices)</h2>
+<div class="bg-white rounded-2xl shadow overflow-hidden">
+    <table class="min-w-full text-left">
+        <thead class="bg-amber-50">
+            <tr>
+                <th class="p-3">Number</th>
+                <th class="p-3">Date</th>
+                <th class="p-3">Items</th>
+                <th class="p-3 text-right">Total</th>
+                <th class="p-3"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var inv in Model.SalesInvoices.OrderByDescending(i => i.IssuedOnUtc))
+            {
+                <tr class="border-t">
+                    <td class="p-3">@inv.Number</td>
+                    <td class="p-3">@inv.IssuedOnUtc.ToLocalTime()</td>
+                    <td class="p-3">
+                        @foreach (var ln in inv.Lines)
+                        {
+                            <div>@ln.Article?.Name × @ln.Quantity</div>
+                        }
+                    </td>
+                    <td class="p-3 text-right">@inv.Total.ToString("C")</td>
+                    <td class="p-3 text-right">
+                        <a href="/Admin/SalesInvoice/@inv.Id/Print" class="text-amber-700 hover:underline">Print</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

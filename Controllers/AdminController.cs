@@ -112,7 +112,7 @@ namespace OneJevelsCompany.Web.Controllers
             return View(list);
         }
 
-        // ===== New Invoice =====
+        // ===== New Invoice (Purchasing) =====
         [HttpGet]
         public async Task<IActionResult> NewInvoice()
         {
@@ -306,6 +306,8 @@ namespace OneJevelsCompany.Web.Controllers
         {
             var vm = await BuildDesignOrderVmAsync(id);
             if (vm == null) return NotFound();
+
+            await LoadCompaniesAsync(); // for the Sell modal company <select>
             return View("~/Views/Admin/DesignOrderDetails.cshtml", vm);
         }
 
@@ -315,6 +317,8 @@ namespace OneJevelsCompany.Web.Controllers
         {
             var vm = await BuildDesignOrderVmAsync(id);
             if (vm == null) return NotFound();
+
+            await LoadCompaniesAsync(); // for the Sell modal on protocol page
             return View("~/Views/Admin/DesignOrderProtocol.cshtml", vm);
         }
 
@@ -581,6 +585,117 @@ namespace OneJevelsCompany.Web.Controllers
         {
             var vm = await _dashboard.GetAsync();
             return View("~/Views/Admin/Dashboard.cshtml", vm);
+        }
+
+        // ====================== SALES (NEW) ======================
+
+        // List of sales invoices (separate from purchasing invoices)
+        [HttpGet("/Admin/SalesInvoices")]
+        public async Task<IActionResult> SalesInvoices()
+        {
+            var list = await _db.SalesInvoices
+                .OrderByDescending(i => i.IssuedOnUtc)
+                .Include(i => i.Company)
+                .Include(i => i.Lines).ThenInclude(l => l.Article)
+                .ToListAsync();
+
+            return View("~/Views/Admin/SalesInvoices.cshtml", list);
+        }
+
+        // Printable sales invoice
+        [HttpGet("/Admin/SalesInvoice/{id:int}/Print")]
+        public async Task<IActionResult> PrintSalesInvoice(int id)
+        {
+            var inv = await _db.SalesInvoices
+                .Include(i => i.Company)
+                .Include(i => i.Lines).ThenInclude(l => l.Article)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            if (inv == null) return NotFound();
+            return View("~/Views/Admin/SalesInvoicePrint.cshtml", inv);
+        }
+
+        // Create a sales invoice from a Built protocol.
+        // Invoice lines: Article + Qty + UnitPrice. Components are NOT shown here (stock already consumed at BUILD).
+        [HttpPost("/Admin/DesignOrder/{id:int}/Sell")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SellBuiltDesign(
+            int id,
+            [FromForm] int qty,
+            [FromForm] decimal profitPercent,
+            [FromForm] int? companyId)
+        {
+            var o = await _db.DesignOrders.FirstOrDefaultAsync(x => x.Id == id);
+            if (o == null) return NotFound();
+
+            if (!string.Equals(o.Status, "Built", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Err"] = "Order must be in 'Built' status.";
+                return RedirectToAction(nameof(DesignOrder), new { id });
+            }
+
+            // Ensure/lookup Article created from protocol (sellable ready product)
+            var articleName = !string.IsNullOrWhiteSpace(o.DesignName) ? o.DesignName! : $"Custom #{o.Id}";
+            var article = await _db.Articles.FirstOrDefaultAsync(a => a.Name == articleName);
+            if (article == null)
+            {
+                article = new Article
+                {
+                    Name = articleName,
+                    Category = o.Category.ToString(),
+                    MaterialsCostPerPiece = o.UnitPriceEstimate ?? 0m,
+                    DefaultMarkupPercent = profitPercent
+                };
+                _db.Articles.Add(article);
+                await _db.SaveChangesAsync();
+            }
+
+            // Price = materials × (1 + markup%)
+            var unitPrice = decimal.Round(article.MaterialsCostPerPiece * (1 + (profitPercent / 100m)), 2);
+            qty = Math.Max(1, qty);
+
+            var inv = new SalesInvoice
+            {
+                Number = $"S-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                IssuedOnUtc = DateTime.UtcNow,
+                CompanyId = companyId,
+                CustomerName = o.CustomerName,     // keep free-text fallback
+                CustomerEmail = o.CustomerEmail,
+                SellerUserName = User?.Identity?.Name ?? "admin",
+                ProfitPercent = profitPercent,     // internal only
+                SourceDesignOrderId = o.Id
+            };
+
+            inv.Lines.Add(new SalesInvoiceLine
+            {
+                ArticleId = article.Id,
+                Quantity = qty,
+                UnitPrice = unitPrice
+            });
+
+            inv.Total = unitPrice * qty;
+
+            _db.SalesInvoices.Add(inv);
+
+            // Mark order as sold (components already reduced at BUILD)
+            o.SalesInvoiceId = inv.Id;
+            o.SoldQty = qty;
+            o.SoldOnUtc = DateTime.UtcNow;
+            o.Status = "Sold";
+
+            await _db.SaveChangesAsync();
+
+            TempData["Ok"] = $"Sales invoice {inv.Number} created for {qty} × '{article.Name}'.";
+            return RedirectToAction(nameof(PrintSalesInvoice), new { id = inv.Id });
+        }
+
+        // Load companies for selection in protocol/design order pages
+        private async Task LoadCompaniesAsync()
+        {
+            ViewBag.Companies = await _db.Companies
+                .OrderBy(c => c.Name)
+                .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })
+                .ToListAsync();
         }
     }
 }

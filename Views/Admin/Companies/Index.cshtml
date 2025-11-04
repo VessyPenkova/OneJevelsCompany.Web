@@ -1,0 +1,37 @@
+﻿@model IEnumerable<OneJevelsCompany.Web.Models.Company>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Companies";
+}
+<div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-semibold">Companies</h1>
+    <a href="/Admin/Companies/New" class="px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-500">New Company</a>
+</div>
+
+<div class="bg-white rounded-2xl shadow overflow-hidden">
+    <table class="min-w-full text-left">
+        <thead class="bg-amber-50">
+            <tr>
+                <th class="p-3">Name</th>
+                <th class="p-3">VAT</th>
+                <th class="p-3">Bulstat</th>
+                <th class="p-3">Contact</th>
+                <th class="p-3"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr class="border-t">
+                    <td class="p-3">@c.Name</td>
+                    <td class="p-3">@c.VatNumber</td>
+                    <td class="p-3">@c.Bulstat</td>
+                    <td class="p-3">@c.ContactPerson</td>
+                    <td class="p-3 text-right">
+                        <a href="/Admin/Companies/@c.Id" class="text-amber-700 hover:underline">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -31,6 +31,10 @@ namespace OneJevelsCompany.Web.Data
 
         // Custom design orders (Design Studio)
         public DbSet<DesignOrder> DesignOrders => Set<DesignOrder>();
+        public DbSet<Company> Companies => Set<Company>();
+        public DbSet<Article> Articles => Set<Article>();
+        public DbSet<SalesInvoice> SalesInvoices => Set<SalesInvoice>();
+        public DbSet<SalesInvoiceLine> SalesInvoiceLines => Set<SalesInvoiceLine>();
 
         protected override void OnModelCreating(ModelBuilder model)
         {

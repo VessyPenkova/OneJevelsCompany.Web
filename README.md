@@ -88,7 +88,11 @@ The platform allows customers to create their own jewellery designs and helps ad
 
 ### Admin Invoices
 ![alt tsxt](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/Invoices.png)
+
+### New Categories 
 ![alt tstx](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/Category.png)
+
+### Performance Dashboard
 ![alt tstx](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/Dashbord.png)
 ---
 

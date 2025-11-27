@@ -77,10 +77,10 @@ The platform allows customers to create their own jewellery designs and helps ad
 ### Custom Bracelet Designer
 ![Bracelet Designer Preview](https://via.placeholder.com/600x300.png?text=Custom+Bracelet+Designer)
 
-### Admin Inventory Panel
-![Admin Panel Preview](https://via.placeholder.com/600x300.png?text=Admin+Inventory+Panel)
+### Admin Design Order Protocol
+![alt tsxt](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/DesignOrderProtocol.png)
 
-
+### Admin Auto Purchese Q
 ![alt tsxt](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/AutoPurcheseQueue.png)
 
 ---

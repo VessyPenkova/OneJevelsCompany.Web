@@ -83,6 +83,7 @@ The platform allows customers to create their own jewellery designs and helps ad
 ### Admin Auto Purchese Q
 ![alt tsxt](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/AutoPurcheseQueue.png)
 
+![alt tsxt](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/Invoices.png)
 ---
 
 ✅ **Developed with ASP.NET Core MVC & SQL Server**  

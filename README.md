@@ -80,6 +80,9 @@ The platform allows customers to create their own jewellery designs and helps ad
 ### Admin Inventory Panel
 ![Admin Panel Preview](https://via.placeholder.com/600x300.png?text=Admin+Inventory+Panel)
 
+
+![alt tsxt](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/AutoPurcheseQueue.png)
+
 ---
 
 ✅ **Developed with ASP.NET Core MVC & SQL Server**  

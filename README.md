@@ -77,13 +77,19 @@ The platform allows customers to create their own jewellery designs and helps ad
 ### Custom Bracelet Designer
 ![Bracelet Designer Preview](https://via.placeholder.com/600x300.png?text=Custom+Bracelet+Designer)
 
+### Build Protocol
+![alt tsxt](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/Bild%20protocol.png)
+
 ### Admin Design Order Protocol
 ![alt tsxt](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/DesignOrderProtocol.png)
 
 ### Admin Auto Purchese Q
 ![alt tsxt](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/AutoPurcheseQueue.png)
 
+### Admin Invoices
 ![alt tsxt](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/Invoices.png)
+![alt tstx](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/Category.png)
+![alt tstx](https://github.com/VessyPenkova/OneJevelsCompany.Web/blob/master/Category.png)
 ---
 
 ✅ **Developed with ASP.NET Core MVC & SQL Server**  

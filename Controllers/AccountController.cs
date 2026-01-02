@@ -23,6 +23,14 @@ namespace OneJevelsCompany.Web.Controllers
         public IActionResult Login(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
+
+            // ✅ Show friendly info ONLY when user was trying to open Build Your Own
+            if (!string.IsNullOrWhiteSpace(returnUrl) &&
+                returnUrl.StartsWith("/Build", StringComparison.OrdinalIgnoreCase))
+            {
+                ViewData["InfoMessage"] = "To use “Build your own”, you need to register or login.";
+            }
+
             return View(new LoginViewModel());
         }
 
@@ -46,6 +54,7 @@ namespace OneJevelsCompany.Web.Controllers
             {
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     return Redirect(returnUrl);
+
                 return RedirectToRoute(RouteNames.Home.Index);
             }
 
@@ -86,6 +95,7 @@ namespace OneJevelsCompany.Web.Controllers
 
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     return Redirect(returnUrl);
+
                 return RedirectToRoute(RouteNames.Home.Index);
             }
 

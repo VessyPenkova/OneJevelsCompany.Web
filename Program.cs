@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,21 +13,19 @@ using OneJevelsCompany.Web.Services.Product;
 using OneJevelsCompany.Web.Services.Dashboard;
 using OneJevelsCompany.Web.Services.Common;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // MVC + Razor Pages (Identity UI uses Razor Pages)
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-// EF Core � SQL Server (supports ActiveConnection switch)
+// EF Core — SQL Server (supports ActiveConnection switch)
 var activeConnKey = builder.Configuration["ActiveConnection"] ?? "DefaultConnection";
 var connectionString = builder.Configuration.GetConnectionString(activeConnKey)
     ?? throw new InvalidOperationException($"Connection string '{activeConnKey}' not found.");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
-
 
 // Identity (Default UI + Roles)
 builder.Services
@@ -41,6 +39,17 @@ builder.Services
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
+
+// ✅ IMPORTANT: Force redirects to YOUR MVC login/register (NOT /Identity/Account/Login)
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.LogoutPath = "/Account/Logout";
+
+    // Optional but nice:
+    options.SlidingExpiration = true;
+});
 
 // Session (cart)
 builder.Services.AddDistributedMemoryCache();
@@ -57,12 +66,8 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, StripePaymentService>();
-
-// Inventory (only if you added it)
 builder.Services.AddScoped<IInventoryService, InventoryService>();
-
 builder.Services.AddScoped<IDashboardService, DashboardService>();
-
 builder.Services.AddScoped<IImageStorage, DiskImageStorage>();
 builder.Services.AddScoped<ICategoryLookup, CategoryLookup>();
 
@@ -96,8 +101,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-
-// Identity UI endpoints
+// Keep this if you use other Identity pages (you can keep it safely)
 app.MapRazorPages();
 
 app.Run();

@@ -1,48 +1,47 @@
 
-# 💎 One Jewellery Company – Custom Jewellery Design & Inventory Management
+# 💎 One Jewellery Company – Custom Jewelry Design & Inventory Management
 
-A modern ASP.NET Core MVC web application designed for a jewellery business.  
-The platform allows customers to create their own jewellery designs and helps administrators manage inventory, pricing, and invoices seamlessly.
+A modern ASP.NET Core MVC web application designed for a jewelry business.
+The platform allows customers to create custom jewelry designs and helps administrators manage inventory, pricing, and internal invoices.
 
 ## ✨ Key Features
 
-### 🛍 Customer Side
-- **Custom Jewellery Designer:**  
-  - Users can design their own bracelets by selecting materials, bead types, and arrangement patterns.  
-  - A real-time **3D preview** lets customers visualize their final product before ordering.
-
+### 👤 Customer Side
+- **Custom Jewelry Designe**  
+  - Design custom bracelets and necklaces by selecting chains, clasps, beads, pendants, and stones..  
+  - Visual preview of selected components during the design process.
+- **Design Submission**
+ - Submit custom designs to administrators for review and processing.  
+  - Receive a reference number upon submission.
 - **Order Form:**  
   - Simple and intuitive order form to send custom designs directly to the admin team.
 
-- **Order Confirmation:**  
-  - Customers receive a reference number upon submitting their design.
+### 🛠 Admin Side
+- **Inventory Management**  
+  - Create, view, and edit jewelry components (name, category, price, stock).
+  - Image-based component catalog.
 
-### 🧾 Admin Side
-- **Inventory Management:**  
-  - View, add, and edit jewellery items with details like name, category, price, and stock.  
-  - Visual display of product images for easy reference.
+- **Invoice Management**  
+  - Internal invoices for component pricing and cost calculation..  
+  - Automatic unit cost calculation.  
 
-- **Invoice Management:**  
-  - Create and manage supplier invoices.  
-  - Add components by category (chain, clasp, pendant, pearl, bead, etc.).  
-  - Automatically calculates unit cost.
-
-- **Jewellery Catalogue:**  
+- **Jewelry Catalogue**  
   - Organized list of existing and custom designs.  
-  - Easy navigation and edit options.
+  - Easy navigation and editing.
 
-## **🛠️ Tech Stack**
- - Frontend: Razor Pages / HTML5, CSS3, Bootstrap  
- - Backend: ASP.NET Core MVC  
- - Database: SQL Server (EF Core ORM)  
- - Tools: Visual Studio, Entity Framework Core, Identity for Authentication
+## **🧰 Tech Stack**
+ - Frontend: ASP.NET Core MVC (Razor Views), HTML5, CSS3, Bootstrap
+ - Backend: ASP.NET Core MVC 
+ - Database: SQL Server (Entity Framework Core)
+ - Authentication: ASP.NET Core Identity
+ - Tools: Visual Studio, Entity Framework Core
 
-## 🧑‍💻 Roles
+## 👥 Roles
 - **Customer:**  
-  - Can design and submit custom jewellery orders.
+  - Designs and submits custom jewelry orders.
   
 - **Admin:**  
-  - Can manage jewellery items, components, and supplier invoices.
+  - Manages inventory, components, designs, and invoices.
 
 ## 🚀 Future Enhancements
 - **📦 Stock Management Enhancements**

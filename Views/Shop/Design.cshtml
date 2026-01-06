@@ -34,12 +34,25 @@
 
 <div class="max-w-6xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-amber-700">Design Studio</h1>
-            <p class="text-gray-600">Create a bead sequence, set bracelet length & bead size, and preview in 3D angle.</p>
+        <div class="flex items-center gap-4">
+            <img src="~/images/Design_Studio.png"
+                 alt="Design Studio"
+                 class="h-12 w-auto" />
+
+            <div>
+                <p class="text-gray-600">
+                    Create a bead sequence, set bracelet length & bead size, and preview in 3D angle.
+                </p>
+            </div>
         </div>
-        <a asp-controller="Shop" asp-action="Build" class="px-4 py-2 rounded border">Back to Build</a>
+
+        <a asp-controller="Shop"
+           asp-action="Build"
+           class="px-4 py-2 rounded border">
+            Back to Build
+        </a>
     </div>
+
 
     <!-- Controls -->
     <div class="grid md:grid-cols-4 gap-4 bg-white p-4 rounded-2xl shadow">
@@ -81,35 +94,7 @@
             <div id="capacity" class="text-sm text-gray-700 ml-auto"></div>
         </div>
     </div>
-
-    <!-- Palette -->
-    <div class="bg-white p-4 rounded-2xl shadow">
-        <h2 class="text-lg font-semibold mb-3">Palette</h2>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            @foreach (var c in Model.OrderBy(x => x.Category?.SortOrder ?? 999).ThenBy(x => x.Name))
-            {
-                var mm = SizeGuess(c);
-                <div class="border rounded-xl p-3 flex gap-3 items-center">
-                    <img src="@(!string.IsNullOrWhiteSpace(c.ImageUrl) ? c.ImageUrl : Url.Content("~/Images/MainBackground.png"))"
-                         alt="@c.Name" class="w-12 h-12 rounded-full object-cover ring-1 ring-gray-200" />
-                    <div class="flex-1 min-w-0">
-                        <div class="font-medium truncate" title="@c.Name">@c.Name</div>
-                        <div class="text-xs text-gray-600">@c.Color @c.SizeLabel @c.Dimensions</div>
-                    </div>
-                    <button class="add-btn px-3 py-2 rounded bg-amber-600 text-white"
-                            data-id="@c.Id"
-                            data-name="@c.Name"
-                            data-img="@(c.ImageUrl ?? Url.Content("~/Images/MainBackground.png"))"
-                            data-mm="@mm"
-                            type="button">
-                        Add
-                    </button>
-                </div>
-            }
-        </div>
-        <p class="text-xs text-gray-500 mt-2">Tip: “Add” puts a row into the pattern (below). Use counts & arrows to arrange one full cycle. The studio can repeat it to fill the chosen length.</p>
-    </div>
-
+   
     <!-- Pattern -->
     <div class="bg-white p-4 rounded-2xl shadow space-y-3">
         <h2 class="text-lg font-semibold">Pattern (one cycle)</h2>
@@ -142,7 +127,6 @@
             <canvas id="preview" class="w-full h-full block"></canvas>
         </div>
         <div id="totals" class="text-sm text-gray-700 mt-2"></div>
-
         <div class="mt-4 flex justify-end">
             <button id="btnProceed" type="button"
                     class="px-5 py-3 rounded-lg bg-amber-600 text-white hover:bg-amber-500">
@@ -187,6 +171,38 @@
             </div>
         </div>
     </div>
+
+    <!-- Palette -->
+    <div class="bg-white p-4 rounded-2xl shadow">
+        <h2 class="text-lg font-semibold mb-3">Palette</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            @foreach (var c in Model.OrderBy(x => x.Category?.SortOrder ?? 999).ThenBy(x => x.Name))
+            {
+                var mm = SizeGuess(c);
+                <div class="border rounded-xl p-3 flex gap-3 items-center">
+                    <img src="@(!string.IsNullOrWhiteSpace(c.ImageUrl) ? c.ImageUrl : Url.Content("~/Images/MainBackground.png"))"
+                         alt="@c.Name" class="w-12 h-12 rounded-full object-cover ring-1 ring-gray-200" />
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium truncate" title="@c.Name">@c.Name</div>
+                        <div class="text-xs text-gray-600">@c.Color @c.SizeLabel @c.Dimensions</div>
+                    </div>
+                    <button class="add-btn px-3 py-2 rounded bg-amber-600 text-white"
+                            data-id="@c.Id"
+                            data-name="@c.Name"
+                            data-img="@(c.ImageUrl ?? Url.Content("~/Images/MainBackground.png"))"
+                            data-mm="@mm"
+                            type="button">
+                        Add
+                    </button>
+                </div>
+            }
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Tip: “Add” puts a row into the pattern (below). Use counts & arrows to arrange one full cycle. The studio can repeat it to fill the chosen length.</p>
+    </div>
+
+    
+
+    
 </div>
 
 @section Scripts {

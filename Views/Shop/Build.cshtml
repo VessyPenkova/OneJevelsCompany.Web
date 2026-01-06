@@ -43,9 +43,15 @@
 
 <!-- Quick link to Design Studio -->
 <div class="max-w-5xl mx-auto -mt-2 mb-4 flex justify-end">
-    <a asp-controller="Shop" asp-action="Design"
-       class="px-4 py-2 rounded bg-amber-600 text-white hover:bg-amber-500">
-        Design Studio (sequence preview)
+    <a asp-controller="Shop"
+       asp-action="Design"
+       class="flex items-center gap-2 px-4 py-2 rounded bg-amber-600 text-white hover:bg-amber-500">
+
+        <img src="~/Images/Design_Studio.png"
+             alt="Design Studio"
+             class="h-6 w-auto bg-white rounded p-1" />
+
+        <span>Design Studio (sequence preview)</span>
     </a>
 </div>
 

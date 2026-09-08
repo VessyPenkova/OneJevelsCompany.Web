@@ -21,9 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\OneJevelsCompany.Core\OneJevelsCompany.Core.csproj" />
-    <ProjectReference Include="..\..\OneJevelsCompany.Infrastructure\OneJevelsCompany.Infrastructure.csproj" />
-    <ProjectReference Include="..\OneJevelsCompany.Web.csproj" />
+    <ProjectReference Include="..\OneJevelsCompany.Core\OneJevelsCompany.Core.csproj" />
+    <ProjectReference Include="..\OneJevelsCompany.Infrastructure\OneJevelsCompany.Infrastructure.csproj" />
+    <ProjectReference Include="..\OneJevelCompany.Web\OneJevelsCompany.Web.csproj" />
   </ItemGroup>
 
 </Project>

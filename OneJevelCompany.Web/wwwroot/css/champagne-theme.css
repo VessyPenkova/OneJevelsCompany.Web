@@ -508,4 +508,102 @@ body { background: var(--paper) !important; color: var(--ink); font-family: Inte
         height: 260px;
     }
 }
+
+/* ===== Design Submitted ===== */
+.design-submitted {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 38px 20px 60px;
+    text-align: center;
+}
+
+    .design-submitted h2 {
+        margin: 0 0 12px;
+        font: 600 36px Georgia, "Times New Roman", serif;
+        color: var(--gold);
+    }
+
+.design-submitted-intro {
+    font-size: 16px;
+    color: var(--ink);
+}
+
+.design-submitted p {
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.design-reference {
+    font-weight: 700;
+    color: var(--gold-dark) !important;
+}
+
+.design-submitted-image {
+    width: 100%;
+    margin: 30px auto 28px;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+}
+
+    .design-submitted-image img {
+        display: block;
+        width: 100%;
+        height: 390px;
+        object-fit: cover;
+    }
+
+.design-submitted-note {
+    max-width: 700px;
+    margin: 0 auto 24px !important;
+    line-height: 1.7;
+}
+
+.design-submitted-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.design-submitted-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0 26px;
+    background: var(--gold);
+    color: #fff !important;
+    text-decoration: none !important;
+    font-size: 13px;
+    transition: .2s ease;
+}
+
+    .design-submitted-button.secondary {
+        background: transparent;
+        color: var(--gold-dark) !important;
+        border: 1px solid var(--gold);
+    }
+
+    .design-submitted-button:hover {
+        background: var(--gold-dark);
+        color: #fff !important;
+        transform: translateY(-1px);
+    }
+
+@media (max-width: 640px) {
+    .design-submitted {
+        padding: 28px 12px 45px;
+    }
+
+        .design-submitted h2 {
+            font-size: 29px;
+        }
+
+    .design-submitted-image img {
+        height: 260px;
+    }
+}
+
 @media (max-width: 760px) { .identity-shell { grid-template-columns:1fr; margin-top:28px; } .identity-card { border-radius:16px; padding:38px 28px; } .identity-story { display:none; } .identity-card { min-height:0; } }

@@ -1,9 +1,46 @@
 ﻿@model int
+
 @{
-    ViewData["Title"] = "Design sent";
+    ViewData["Title"] = "Design Submitted";
 }
-<div class="max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow">
-    <h2 class="text-xl font-semibold mb-2">Thank you!</h2>
-    <p>Your design was sent to our team. Reference #: <b>@Model</b>.</p>
-    <p class="mt-3"><a class="text-amber-700 underline" href="/">Continue shopping</a></p>
+
+<div class="design-submitted">
+
+    <h2>Your design is on its way</h2>
+
+    <p class="design-submitted-intro">
+        Thank you for creating something unique with us.
+    </p>
+
+    <p>
+        Your jewellery design has been successfully sent to our team.
+    </p>
+
+    <p class="design-reference">
+        Design Reference #@Model
+    </p>
+
+    <div class="design-submitted-image">
+        <img src="~/Images/DesignSubmitted.jpg"
+             alt="Selected jewellery components arranged into a unique design" />
+    </div>
+
+    <p class="design-submitted-note">
+        Our team will carefully review your design and contact you about the next steps.
+    </p>
+
+    <div class="design-submitted-actions">
+        <a asp-controller="Shop"
+           asp-action="Designs"
+           class="design-submitted-button secondary">
+            View My Designs
+        </a>
+
+        <a asp-controller="Shop"
+           asp-action="Collections"
+           class="design-submitted-button">
+            Continue Shopping
+        </a>
+    </div>
+
 </div>

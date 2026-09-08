@@ -194,7 +194,7 @@ namespace OneJevelsCompany.Infrastructure.Persistence
             }
 
             var necklace = await db.Jewels
-                .FirstAsync(j => j.Name == "Classic Gold Pearl Necklace");
+     .FirstOrDefaultAsync(j => j.Name == "Classic Gold Pearl Necklace");
 
             var bracelet = await db.Jewels
                 .FirstAsync(j => j.Name == "Onyx Serenity Bracelet");
@@ -214,12 +214,12 @@ namespace OneJevelsCompany.Infrastructure.Persistence
                 }
 
                 Link(necklace, "Gold Chain (45cm)");
-                Link(necklace, "Clasp – Gold");
-                Link(necklace, "Pendant – Pearl");
+                Link(necklace, "Clasp - Gold");
+                Link(necklace, "Pendant - Pearl");
 
                 Link(bracelet, "Leather Cord (Black)");
-                Link(bracelet, "Clasp – Silver");
-                Link(bracelet, "Bead – Onyx (pack)");
+                Link(bracelet, "Clasp - Silver");
+                Link(bracelet, "Bead - Onyx (pack)");
 
                 await db.SaveChangesAsync();
             }

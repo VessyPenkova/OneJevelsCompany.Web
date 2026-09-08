@@ -308,9 +308,21 @@ The **Build Protocol** acts as both the maker's manufacturing instruction and th
 
 ![3D Design Studio](OneJevelCompany.Web/wwwroot/Images/Portfolio/Design.jpg)
 
+### Custom Design Submitted
+
+A customer-created jewellery design, built from selected components, is submitted to the team for review with a unique design reference.
+
+![Custom Design Submitted](OneJevelCompany.Web/wwwroot/Images/Portfolio/Portfolio_Custom_Design_Submitted.jpg)
+
 ### Components Shop
 
 ![Components Shop](OneJevelCompany.Web/wwwroot/Images/Portfolio/Components.jpg)
+
+### Order Confirmation
+
+Successful order confirmation providing the customer with their order reference and next-step confirmation.
+
+![Order Confirmation](OneJevelCompany.Web/wwwroot/Images/Portfolio/Portfolio_Order_Success.jpg)
 
 ### Our Story
 
@@ -319,6 +331,7 @@ The **Build Protocol** acts as both the maker's manufacturing instruction and th
 ### Admin Dashboard
 
 ![One Jewellery Company Admin Dashboard](OneJevelCompany.Web/wwwroot/Images/Portfolio/Admin-Dashboard.jpg)
+
 ---
 
 ## ℹ️ Development Notes

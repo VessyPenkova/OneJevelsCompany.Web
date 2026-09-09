@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OneJevelsCompany.Core.Entities;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 
 namespace OneJevelsCompany.Infrastructure.Persistence
 {
@@ -95,6 +93,10 @@ namespace OneJevelsCompany.Infrastructure.Persistence
 
             model.Entity<Order>()
                 .Property(o => o.Total)
+                .HasPrecision(14, 2);
+
+            model.Entity<Invoice>()
+                .Property(i => i.TotalCost)
                 .HasPrecision(14, 2);
 
             model.Entity<InvoiceLine>()

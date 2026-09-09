@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OneJevelsCompany.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using OneJevelsCompany.Infrastructure.Persistence;
 namespace OneJevelsCompany.Web.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260909165915_FixInvoiceTotalCostPrecision")]
+    partial class FixInvoiceTotalCostPrecision
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -224,7 +227,7 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Collection", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.Collection", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -263,7 +266,7 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("Collections");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Component", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.Component", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -322,7 +325,7 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("Components");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.ComponentCategory", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.ComponentCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -346,7 +349,7 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("ComponentCategories");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Design", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.Design", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -374,7 +377,7 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("Designs");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.DesignOrder", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.DesignOrder", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -464,7 +467,7 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("DesignOrders");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Invoice", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.Invoice", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -485,14 +488,15 @@ namespace OneJevelsCompany.Web.Migrations
                         .HasColumnType("nvarchar(120)");
 
                     b.Property<decimal>("TotalCost")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(14, 2)
+                        .HasColumnType("decimal(14,2)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Invoices");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.InvoiceLine", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.InvoiceLine", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -536,7 +540,7 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("InvoiceLines");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Jewel", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.Jewel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -568,7 +572,7 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("Jewels");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.JewelComponent", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.JewelComponent", b =>
                 {
                     b.Property<int>("JewelId")
                         .HasColumnType("int");
@@ -586,7 +590,7 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("JewelComponents");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Order", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.Order", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -621,7 +625,7 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.OrderItem", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.OrderItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -674,7 +678,7 @@ namespace OneJevelsCompany.Web.Migrations
                     b.ToTable("OrderItems");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.PurchaseNeed", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.PurchaseNeed", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -766,9 +770,9 @@ namespace OneJevelsCompany.Web.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Component", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.Component", b =>
                 {
-                    b.HasOne("OneJevelsCompany.Web.Models.ComponentCategory", "Category")
+                    b.HasOne("OneJevelsCompany.Core.Entities.ComponentCategory", "Category")
                         .WithMany("Components")
                         .HasForeignKey("ComponentCategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -777,25 +781,25 @@ namespace OneJevelsCompany.Web.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.InvoiceLine", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.InvoiceLine", b =>
                 {
-                    b.HasOne("OneJevelsCompany.Web.Models.Collection", "Collection")
+                    b.HasOne("OneJevelsCompany.Core.Entities.Collection", "Collection")
                         .WithMany()
                         .HasForeignKey("CollectionId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("OneJevelsCompany.Web.Models.Component", "Component")
+                    b.HasOne("OneJevelsCompany.Core.Entities.Component", "Component")
                         .WithMany()
                         .HasForeignKey("ComponentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("OneJevelsCompany.Web.Models.Invoice", "Invoice")
+                    b.HasOne("OneJevelsCompany.Core.Entities.Invoice", "Invoice")
                         .WithMany("Lines")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OneJevelsCompany.Web.Models.Jewel", "Jewel")
+                    b.HasOne("OneJevelsCompany.Core.Entities.Jewel", "Jewel")
                         .WithMany()
                         .HasForeignKey("JewelId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -809,15 +813,15 @@ namespace OneJevelsCompany.Web.Migrations
                     b.Navigation("Jewel");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.JewelComponent", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.JewelComponent", b =>
                 {
-                    b.HasOne("OneJevelsCompany.Web.Models.Component", "Component")
+                    b.HasOne("OneJevelsCompany.Core.Entities.Component", "Component")
                         .WithMany("Jewels")
                         .HasForeignKey("ComponentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OneJevelsCompany.Web.Models.Jewel", "Jewel")
+                    b.HasOne("OneJevelsCompany.Core.Entities.Jewel", "Jewel")
                         .WithMany("Components")
                         .HasForeignKey("JewelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -828,9 +832,9 @@ namespace OneJevelsCompany.Web.Migrations
                     b.Navigation("Jewel");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.OrderItem", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.OrderItem", b =>
                 {
-                    b.HasOne("OneJevelsCompany.Web.Models.Order", "Order")
+                    b.HasOne("OneJevelsCompany.Core.Entities.Order", "Order")
                         .WithMany("Items")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -839,9 +843,9 @@ namespace OneJevelsCompany.Web.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.PurchaseNeed", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.PurchaseNeed", b =>
                 {
-                    b.HasOne("OneJevelsCompany.Web.Models.Component", "Component")
+                    b.HasOne("OneJevelsCompany.Core.Entities.Component", "Component")
                         .WithMany()
                         .HasForeignKey("ComponentId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -850,27 +854,27 @@ namespace OneJevelsCompany.Web.Migrations
                     b.Navigation("Component");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Component", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.Component", b =>
                 {
                     b.Navigation("Jewels");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.ComponentCategory", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.ComponentCategory", b =>
                 {
                     b.Navigation("Components");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Invoice", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.Invoice", b =>
                 {
                     b.Navigation("Lines");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Jewel", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.Jewel", b =>
                 {
                     b.Navigation("Components");
                 });
 
-            modelBuilder.Entity("OneJevelsCompany.Web.Models.Order", b =>
+            modelBuilder.Entity("OneJevelsCompany.Core.Entities.Order", b =>
                 {
                     b.Navigation("Items");
                 });

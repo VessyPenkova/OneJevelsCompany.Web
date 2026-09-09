@@ -1,28 +1,87 @@
 @{
     ViewData["Title"] = "Home";
+   
 }
 
-<section class="hero-luxury">
-    <div class="hero-copy">
-        <div class="eyebrow">Contemporary fine jewellery</div>
-        <h1>Jewellery made to feel entirely your own.</h1>
-        <p>Explore considered pieces or create a design from the details that matter to you. Elegant, personal and made with precision.</p>
-        <div class="hero-actions">
-            <a asp-controller="Shop" asp-action="Collections" class="lux-btn primary">Explore collections</a>
-            <a asp-controller="Shop" asp-action="Build" class="lux-btn secondary">Create your piece</a>
-        </div>
-    </div>
-    <div class="hero-art" aria-hidden="true"><div class="hero-gem"></div></div>
-</section>
+<link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
 
-<section class="value-strip">
-    <div class="value-item"><strong>Made with intention</strong><span>Thoughtful design from first detail to finish</span></div>
-    <div class="value-item"><strong>Designed by you</strong><span>Build a piece that reflects your own story</span></div>
-    <div class="value-item"><strong>Crafted precisely</strong><span>Clear materials, considered components, lasting form</span></div>
-</section>
+<div class="home-hero-wrap">
+
+    <section class="hero-luxury">
+
+        <div class="hero-copy">
+            <div class="eyebrow">
+                Contemporary fine jewellery
+            </div>
+
+            <h1>
+                Jewellery made to feel entirely your own.
+            </h1>
+
+            <p>
+                Explore considered pieces or create a design from the details
+                that matter to you. Elegant, personal and made with precision.
+            </p>
+
+            <div class="hero-actions">
+                <a asp-controller="Shop"
+                   asp-action="Collections"
+                   class="lux-btn primary">
+                    Explore collections
+                </a>
+
+                <a asp-controller="Shop"
+                   asp-action="Build"
+                   class="lux-btn secondary">
+                    Create your piece
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-photo">
+            <img src="/Images/HomeHero.jpg"
+                 alt="Jewellery design studio" />
+        </div>
+
+    </section>
+
+    <section class="value-strip">
+
+        <div class="value-item">
+            <strong>Made with intention</strong>
+            <span>
+                Thoughtful design from first detail to finish
+            </span>
+        </div>
+
+        <div class="value-item">
+            <strong>Designed by you</strong>
+            <span>
+                Build a piece that reflects your own story
+            </span>
+        </div>
+
+        <div class="value-item">
+            <strong>Crafted precisely</strong>
+            <span>
+                Clear materials, considered components, lasting form
+            </span>
+        </div>
+
+    </section>
+
+</div>
 
 <div class="section-head">
-    <div class="eyebrow">Discover your style</div>
-    <h2>One piece. Your signature.</h2>
-    <p>Start with our collection or make something individual.</p>
+    <div class="eyebrow">
+        Discover your style
+    </div>
+
+    <h2>
+        One piece. Your signature.
+    </h2>
+
+    <p>
+        Start with our collection or make something individual.
+    </p>
 </div>

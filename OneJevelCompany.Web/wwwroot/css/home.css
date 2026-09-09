@@ -1,0 +1,140 @@
+﻿/* =====================================================
+   Home Page
+   ===================================================== */
+
+.site-main {
+    padding-top: 4px;
+    padding-bottom: 0;
+}
+
+.home-hero-wrap {
+    width: min(960px, calc(100% - 40px));
+    margin: 6px auto 0;
+}
+
+/* =====================================================
+   Hero
+   ===================================================== */
+
+.hero-luxury {
+    display: grid;
+    grid-template-columns: 54% 46%;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #eee7dc;
+}
+
+.hero-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 24px 52px;
+}
+
+    .hero-copy .eyebrow {
+        margin-bottom: 10px;
+    }
+
+    .hero-copy h1 {
+        max-width: 520px;
+        margin: 0;
+        font-size: clamp(38px, 3.1vw, 50px);
+        line-height: 1.02;
+    }
+
+    .hero-copy p {
+        max-width: 520px;
+        margin: 14px 0 18px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+.hero-actions {
+    margin: 0;
+}
+
+.hero-photo {
+    min-width: 0;
+    overflow: hidden;
+}
+
+    .hero-photo img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+
+/* =====================================================
+   Value Strip
+   ===================================================== */
+
+.value-strip {
+    min-height: 76px;
+}
+
+.value-item {
+    padding: 14px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+    .value-item strong {
+        margin-bottom: 4px;
+    }
+
+    .value-item span {
+        line-height: 1.4;
+    }
+
+
+/* =====================================================
+   Discover Section
+   ===================================================== */
+
+.section-head {
+    padding: 2px 20px 0;
+}
+
+    .section-head h2 {
+        font-size: 22px;
+    }
+
+
+/* =====================================================
+   Responsive
+   ===================================================== */
+
+@media (max-width: 1000px) {
+
+    .hero-luxury {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-copy {
+        padding: 42px 36px;
+    }
+
+    .hero-photo img {
+        width: 100%;
+        height: auto;
+    }
+}
+
+@media (max-width: 640px) {
+
+    .home-hero-wrap {
+        width: calc(100% - 24px);
+        margin-top: 24px;
+    }
+
+    .hero-copy {
+        padding: 36px 24px;
+    }
+
+        .hero-copy h1 {
+            font-size: 40px;
+        }
+}
